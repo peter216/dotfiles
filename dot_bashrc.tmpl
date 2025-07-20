@@ -203,3 +203,7 @@ function explain() {
 {{- end }}
 
 alias ghmar="gh api --hostname git.marriott.com"
+
+function ghuser() {
+    gh api --hostname git.marriott.com "users/$1" | jq -r '{login: .login, id: .id, name: .name}'
+}
