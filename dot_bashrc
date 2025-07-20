@@ -149,13 +149,14 @@ export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/api_github_com_certchain.pem
 # Function chezmoi push
 function cmpush(){
     local olddir=$PWD
-    chezmoi cd
-    echo $PWD
-    git add -A -v 
-    git commit -m "chezmoi update" -v
-    git push -v
+    echo -e "${CYAN}Start path: $PWD${RESET}"
+    cd $(chezmoi source-path)
+    echo -e "${CYAN}Changed to Chezmoi source path: $PWD${RESET}"
+    git add -A
+    git commit -m "chezmoi update"
+    smart_push
     cd $olddir
-    echo $PWD
+    echo -e "${CYAN}Back to original path: $PWD${RESET}"
 }
 
 # Function: git diff with diff-so-fancy
