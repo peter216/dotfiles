@@ -187,6 +187,11 @@ PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND; }auto_venv; dedup_path"
 
 alias delautobranch='git branch | fgrep autobackup | tr "\n" " " | delete_branches.sh'
 
+# machine-specific configuration
+{{- if eq .chezmoi.hostname "hdqncnmdj01" }}
+# This machine doesn't have access to public github
+{{- end }}
+{{- if ne .chezmoi.hostname "hdqncnmdj01" }}
 # github copilot cli
 eval "$(gh copilot alias -- bash)"
 function suggest() {
@@ -195,4 +200,6 @@ function suggest() {
 function explain() {
     ghce --hostname github.com "$@" | tail -n +7
 }
+{{- end }}
+
 alias ghmar="gh api --hostname git.marriott.com"
