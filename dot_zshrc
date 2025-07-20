@@ -109,6 +109,7 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+alias cm="chezmoi"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -199,15 +200,8 @@ alias l='ls -CF'
 alias alert='notify-send --urgency=low -i "$([[ $? = 0 ]] && echo terminal || echo error)" "$(history | tail -n1 | sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
 # Alias definitions
-if [[ -f ~/.bash_aliases ]]; then
-    source ~/.bash_aliases
-fi
-
-# Enable programmable completion features
-if [[ -f /usr/share/bash-completion/bash_completion ]]; then
-    source /usr/share/bash-completion/bash_completion
-elif [[ -f /etc/bash_completion ]]; then
-    source /etc/bash_completion
+if [[ -f ~/.local/bin/zsh_aliases ]]; then
+    source ~/.local/bin/.zsh_aliases
 fi
 
 export PATH=/home/ubuntu/bin:/usr/local/go/bin:$PATH
@@ -215,7 +209,7 @@ source /home/ubuntu/uvbase/.venv/bin/activate
 
 [[ -e "/home/ubuntu/lib/oracle-cli/lib/python3.12/site-packages/oci_cli/bin/oci_autocomplete.sh" ]] && source "/home/ubuntu/lib/oracle-cli/lib/python3.12/site-packages/oci_cli/bin/oci_autocomplete.sh"
 
-alias bashrc="source ~/.zshrc"
+alias zshrc="source ~/.zshrc"
 
 eval "$(gh copilot alias -- zsh)"
 
@@ -352,3 +346,20 @@ github_billing_summary() {
     fi
   fi
 }
+
+BW_STATUS=$(bw status | jq -r '.status')
+
+if [[ "$BW_STATUS" == 'locked' ]]; then
+    OUTPUT=$(bw unlock)
+    export BW_SESSION=$(echo "$OUTPUT" | grep "export BW_SESSION" | cut -d '=' -f 2 | tr -d '"')
+    if [[ $? -eq 0 ]]; then
+        echo "BW_SESSION set"
+    else
+        echo "WARNING: BW_SESSION not set"
+    fi
+fi
+
+BW_EMAIL_DATA="$(bw list items --search www.chezmoi.io | jq -r '.[].notes')"
+export WORKEMAIL=$(yq -r '.WORK_EMAIL // .WORKEMAIL' <<< "$BW_EMAIL_DATA")
+export HOMEEMAIL=$(yq -r '.PERSONAL_EMAIL // .HOMEEMAIL' <<< "$BW_EMAIL_DATA")
+
