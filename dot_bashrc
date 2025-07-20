@@ -89,6 +89,7 @@ fi
 alias ll='ls -lart'
 alias la='ls -A'
 alias l='ls -CF'
+alias cm='chezmoi'
 
 # Add an "alert" alias for long running commands
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
@@ -144,6 +145,18 @@ export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/api_github_com_certchain.pem
 
 # Source Rust environment if present
 . "$HOME/.cargo/env"
+
+# Function chezmoi push
+function cmpush(){
+    local olddir=$PWD
+    chezmoi cd
+    echo $PWD
+    git add -A -v 
+    git commit -m "chezmoi update" -v
+    git push -v
+    cd $olddir
+    echo $PWD
+}
 
 # Function: git diff with diff-so-fancy
 function gdiff() {
