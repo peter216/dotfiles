@@ -1,0 +1,354 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# If you come from bash you might have to change your $PATH.
+# export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
+
+# Path to your Oh My Zsh installation.
+export ZSH="$HOME/.oh-my-zsh"
+
+# Set name of the theme to load --- if set to "random", it will
+# load a random theme each time Oh My Zsh is loaded, in which case,
+# to know which specific one was loaded, run: echo $RANDOM_THEME
+# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+ZSH_THEME="powerlevel10k/powerlevel10k"
+
+# Set list of themes to pick from when loading at random
+# Setting this variable when ZSH_THEME=random will cause zsh to load
+# a theme from this variable instead of looking in $ZSH/themes/
+# If set to an empty array, this variable will have no effect.
+# ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
+
+# Uncomment the following line to use case-sensitive completion.
+# CASE_SENSITIVE="true"
+
+# Uncomment the following line to use hyphen-insensitive completion.
+# Case-sensitive completion must be off. _ and - will be interchangeable.
+# HYPHEN_INSENSITIVE="true"
+
+# Uncomment one of the following lines to change the auto-update behavior
+# zstyle ':omz:update' mode disabled  # disable automatic updates
+# zstyle ':omz:update' mode auto      # update automatically without asking
+# zstyle ':omz:update' mode reminder  # just remind me to update when it's time
+
+# Uncomment the following line to change how often to auto-update (in days).
+# zstyle ':omz:update' frequency 13
+
+# Uncomment the following line if pasting URLs and other text is messed up.
+# DISABLE_MAGIC_FUNCTIONS="true"
+
+# Uncomment the following line to disable colors in ls.
+# DISABLE_LS_COLORS="true"
+
+# Uncomment the following line to disable auto-setting terminal title.
+# DISABLE_AUTO_TITLE="true"
+
+# Uncomment the following line to enable command auto-correction.
+# ENABLE_CORRECTION="true"
+
+# Uncomment the following line to display red dots whilst waiting for completion.
+# You can also set it to another string to have that shown instead of the default red dots.
+# e.g. COMPLETION_WAITING_DOTS="%F{yellow}waiting...%f"
+# Caution: this setting can cause issues with multiline prompts in zsh < 5.7.1 (see #5765)
+# COMPLETION_WAITING_DOTS="true"
+
+# Uncomment the following line if you want to disable marking untracked files
+# under VCS as dirty. This makes repository status check for large repositories
+# much, much faster.
+# DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+# Uncomment the following line if you want to change the command execution time
+# stamp shown in the history command output.
+# You can set one of the optional three formats:
+# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
+# or set a custom format using the strftime function format specifications,
+# see 'man strftime' for details.
+# HIST_STAMPS="mm/dd/yyyy"
+
+# Would you like to use another custom folder than $ZSH/custom?
+# ZSH_CUSTOM=/path/to/new-custom-folder
+
+# Which plugins would you like to load?
+# Standard plugins can be found in $ZSH/plugins/
+# Custom plugins may be added to $ZSH_CUSTOM/plugins/
+# Example format: plugins=(rails git textmate ruby lighthouse)
+# Add wisely, as too many plugins slow down shell startup.
+plugins=(git)
+
+source $ZSH/oh-my-zsh.sh
+
+# User configuration
+
+# export MANPATH="/usr/local/man:$MANPATH"
+
+# You may need to manually set your language environment
+# export LANG=en_US.UTF-8
+
+# Preferred editor for local and remote sessions
+# if [[ -n $SSH_CONNECTION ]]; then
+#   export EDITOR='vim'
+# else
+#   export EDITOR='nvim'
+# fi
+
+# Compilation flags
+# export ARCHFLAGS="-arch $(uname -m)"
+
+# Set personal aliases, overriding those provided by Oh My Zsh libs,
+# plugins, and themes. Aliases can be placed here, though Oh My Zsh
+# users are encouraged to define aliases within a top-level file in
+# the $ZSH_CUSTOM folder, with .zsh extension. Examples:
+# - $ZSH_CUSTOM/aliases.zsh
+# - $ZSH_CUSTOM/macos.zsh
+# For a full list of active aliases, run `alias`.
+#
+# Example aliases
+# alias zshconfig="mate ~/.zshrc"
+# alias ohmyzsh="mate ~/.oh-my-zsh"
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+export DEBUG=0
+
+# ~/.zshrc: executed by zsh for non-login shells.
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# Don't put duplicate lines or lines starting with space in the history.
+# See zsh options for more details.
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+
+# Append to the history file, don't overwrite it
+setopt APPEND_HISTORY
+
+# Set history length
+HISTSIZE=1000
+SAVEHIST=2000
+
+# Make `less` more friendly for non-text input files
+if [[ -x /usr/bin/lesspipe ]]; then
+    eval "$(SHELL=/bin/sh lesspipe)"
+fi
+
+# Set variable identifying the chroot you work in (used in the prompt below)
+if [[ -z "${debian_chroot:-}" && -r /etc/debian_chroot ]]; then
+    debian_chroot=$(< /etc/debian_chroot)
+fi
+
+# Set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color|*-256color) color_prompt=yes;;
+esac
+
+# Uncomment for a colored prompt, if the terminal has the capability
+force_color_prompt=yes
+
+if [[ -n "$force_color_prompt" ]]; then
+    if [[ -x /usr/bin/tput && $(tput setaf 1 &>/dev/null) ]]; then
+        color_prompt=yes
+    else
+        color_prompt=
+    fi
+fi
+
+if [[ "$color_prompt" = yes ]]; then
+    PS1='${debian_chroot:+($debian_chroot)}%F{green}%n@%m%f:%F{blue}%~%f\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}%n@%m:%~\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm, set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="%{\e]0;${debian_chroot:+($debian_chroot)}%n@%m: %~\a%}$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# Enable color support for `ls` and add handy aliases
+if [[ -x /usr/bin/dircolors ]]; then
+    eval "$(dircolors -b ~/.dircolors 2>/dev/null || dircolors -b)"
+    alias ls='ls --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# Colored GCC warnings and errors
+# export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# Some more `ls` aliases
+alias ll='ls -lart'
+alias l1='ls -1art'
+alias la='ls -A'
+alias l='ls -CF'
+
+# Add an "alert" alias for long-running commands
+alias alert='notify-send --urgency=low -i "$([[ $? = 0 ]] && echo terminal || echo error)" "$(history | tail -n1 | sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# Alias definitions
+if [[ -f ~/.bash_aliases ]]; then
+    source ~/.bash_aliases
+fi
+
+# Enable programmable completion features
+if [[ -f /usr/share/bash-completion/bash_completion ]]; then
+    source /usr/share/bash-completion/bash_completion
+elif [[ -f /etc/bash_completion ]]; then
+    source /etc/bash_completion
+fi
+
+export PATH=/home/ubuntu/bin:/usr/local/go/bin:$PATH
+source /home/ubuntu/uvbase/.venv/bin/activate
+
+[[ -e "/home/ubuntu/lib/oracle-cli/lib/python3.12/site-packages/oci_cli/bin/oci_autocomplete.sh" ]] && source "/home/ubuntu/lib/oracle-cli/lib/python3.12/site-packages/oci_cli/bin/oci_autocomplete.sh"
+
+alias bashrc="source ~/.zshrc"
+
+eval "$(gh copilot alias -- zsh)"
+
+# Suggest function
+suggest() {
+    if [[ "$#" -lt 1 ]]; then
+        echo "Usage: suggest <MULTI-WORD STRING>"
+        return 1
+    fi
+
+    printf "Exit\n" | ghcs "$@" | tail -n +7 | head -n 5
+}
+
+# Copy function
+copy() {
+  local input
+  input=$(cat)
+  printf "\e]52;c;%s\a" "$(printf %s "$input" | base64 | tr -d '\n')"
+}
+
+. "$HOME/.local/bin/env"
+. "$HOME/.env"
+
+alias awsbudget='aws budgets describe-budget --account-id $(aws sts get-caller-identity --query Account --output text) --budget-name "MonthlyCostBudget"'
+alias awsspend='aws ce get-cost-and-usage \
+  --time-period Start=$(date +%Y-%m-01),End=$(date +%Y-%m-%d) \
+  --granularity MONTHLY \
+  --metrics "BlendedCost" \
+  --query "ResultsByTime[0].Total.BlendedCost.Amount"'
+export PATH=$(echo "$PATH" | awk -v RS=':' '!a[$0]++' | tr '\n' ':')
+
+# OCI Monthly Spend Function
+oci_monthly_spend() {
+  local START="$(date '+%Y-%m-01T00:00:00Z')"
+  local NEXTMONTH="$(date -d '+1 month' +'%Y%m%d')"
+  local END="$(date -d $NEXTMONTH '+%Y-%m-01T00:00:00Z')"
+  if [[ $DEBUG -eq 1 ]]; then
+      LASTARG="--debug"
+  else
+      LASTARG=''
+  fi
+  oci usage-api usage-summary request-summarized-usages \
+    --tenant-id "$OCI_TENANTID" \
+    --time-usage-started "$START" \
+    --time-usage-ended "$END" \
+    --granularity "MONTHLY" $LASTARG "$@"
+}
+
+# GitHub Billing Summary Function
+github_billing_summary() {
+  if [[ $DEBUG -eq 1 ]]; then
+    echo "DEBUG is on"
+  fi
+  local target="$1"                 # org or username
+  local is_user=1
+  local output_file=""
+  local raw=0
+
+  # Argument parsing
+  shift
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --user)
+        is_user=1
+        shift
+        ;;
+      --raw)
+        raw=1
+        shift
+        ;;
+      --output)
+        output_file="$2"
+        shift 2
+        ;;
+      *)
+        echo "Unknown argument: $1" >&2
+        return 1
+        ;;
+    esac
+  done
+
+  if [[ -z "$GITHUB_TOKEN" ]]; then
+    echo " GITHUB_TOKEN is not set"
+    return 1
+  fi
+
+  local base_url="https://api.github.com"
+  local prefix="$([[ $is_user -eq 1 ]] && echo "users" || echo "orgs")/$target/settings/billing"
+
+  if [[ $DEBUG -eq 1 ]]; then
+    CURLFLAG="-v"
+  else
+    CURLFLAG="-s"
+  fi
+  # Fetch all three billing categories
+  local actions=$(curl $CURLFLAG -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "$base_url/$prefix/actions")
+  local packages=$(curl $CURLFLAG -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "$base_url/$prefix/packages")
+  local storage=$(curl $CURLFLAG -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "$base_url/$prefix/shared-storage")
+
+  if [[ $raw -eq 1 ]]; then
+    local date=$(date +%Y-%m-%d)
+    local actions_csv=$(echo "$actions" | jq -r '[.total_minutes_used, .total_paid_minutes_used] | @csv')
+    local packages_csv=$(echo "$packages" | jq -r '[.total_gigabytes_bandwidth_used, .total_paid_gigabytes_bandwidth_used] | @csv')
+    local storage_csv=$(echo "$storage" | jq -r '[.days_left_in_billing_cycle, .estimated_paid_storage_for_month, .estimated_storage_for_month] | @csv')
+    local row="$date,$actions_csv,$packages_csv,$storage_csv"
+
+    echo "$row"
+
+    if [[ -n "$output_file" ]]; then
+      if [[ ! -f "$output_file" ]]; then
+        echo "date,actions_total,actions_paid,packages_gb,packages_paid_gb,storage_days_left,storage_paid_gb_est,storage_total_gb_est" >> "$output_file"
+      fi
+      echo "$row" >> "$output_file"
+    fi
+  else
+    echo "📦 GitHub Billing Summary for: $target"
+    echo "--- Actions ---"
+    if [[ $DEBUG -eq 1 ]]; then
+      echo "$actions"
+    else
+      echo "$actions" | jq '{total_minutes_used, total_paid_minutes_used}'
+    fi
+    echo "--- Packages ---"
+    if [[ $DEBUG -eq 1 ]]; then
+      echo "$packages"
+    else
+      echo "$packages" | jq '{total_gigabytes_bandwidth_used, total_paid_gigabytes_bandwidth_used}'
+    fi
+    echo "--- Shared Storage ---"
+    if [[ $DEBUG -eq 1 ]]; then
+      echo "$storage"
+    else
+      echo "$storage" | jq '{days_left_in_billing_cycle, estimated_paid_storage_for_month, estimated_storage_for_month}'
+    fi
+  fi
+}
