@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+# Run uv with project context, forgiving if no extra args
+function uvp() {
+    if [ -z "$PROJECT_NAME" ]; then
+        echo -e "${RED}PROJECT_NAME is not set. Please ensure you are in a valid project directory.${RESET}"
+        return 1
+    fi
+    if [ -z "$VIRTUAL_ENV" ]; then
+        echo -e "${RED}VIRTUAL_ENV is not set. Please activate your virtual environment first.${RESET}"
+        return 1
+    fi
+    if [ -z "$1" ]; then
+        echo -e "${YELLOW}No uv command provided. Usage: uvp <command> [args...]${RESET}"
+        return 1
+    fi
+    CMD=$1
+    shift
+    if [ "$DEBUG" = 1 ]; then
+        echo -n '$1: '
+        echo "\"$1\" "
+        echo -n '$@: '
+        for arg in "$@"; do
+            echo -n "\"$arg\" "
+        done
+        echo
+    fi
+    uv "$CMD" --project "$PROJECT_NAME" --directory "$(dirname "$VIRTUAL_ENV")" "$@"
+}

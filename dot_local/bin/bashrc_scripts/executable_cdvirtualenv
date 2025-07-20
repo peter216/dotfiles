@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Change directory to the virtual environment's directory
+function cdvirtualenv() {
+    if [ -n "$VIRTUAL_ENV" ]; then
+        cd "$(dirname "$VIRTUAL_ENV")"
+    else
+        echo -e "${RED}VIRTUAL_ENV is not set. No virtual environment is active.${RESET}"
+        return 1
+    fi
+}

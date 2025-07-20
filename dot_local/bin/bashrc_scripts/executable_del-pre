@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Delete pre-commit and post-fix branches
+function del-pre() {
+    LOCAL_BRANCHES=$(git branch --list | egrep "^\s*(pre-commit-stash|post-fix-stash)" | tr -d ' ' | tr '\n' ' ')
+    REMOTE_BRANCHES=$(git branch -r | egrep "^\s*(origin/pre-commit-stash|origin/post-fix-stash)" | tr -d ' ' | tr '\n' ' ')
+    if [[ -n "$LOCAL_BRANCHES" ]]; then
+        for branch in $LOCAL_BRANCHES; do
+            git branch -v -D "$branch"
+        done
+    fi
+    if [[ -n "$REMOTE_BRANCHES" ]]; then
+        for branch in $REMOTE_BRANCHES; do
+            git push -v origin --delete "$branch"
+        done
+    fi
+}
