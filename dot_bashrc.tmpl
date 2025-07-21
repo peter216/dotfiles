@@ -90,6 +90,7 @@ alias ll='ls -lart'
 alias la='ls -A'
 alias l='ls -CF'
 alias cm='chezmoi'
+alias cmcd="cd $(chezmoi source-path)"
 
 # Add an "alert" alias for long running commands
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
@@ -113,6 +114,9 @@ export ANSIBLE_VAULT_PASSWORD_FILE=~/.vault_pass
 export ANSIBLE_DEPRECATION_WARNINGS=False
 export ANSIBLE_PYTHON_INTERPRETER=~/.uv/.venv/bin/python3
 export ANSIBLE_NAVIGATOR_PLAYBOOK_ARTIFACT_SAVE_AS="{playbook_dir}/logs/{playbook_name}-artifact-{time_stamp}.json"
+
+# Project-specific PATH and aliases
+export PATH=~/.uv/.venv/bin:~/.local/bin:~/bin:/usr/libexec/rancid:~/go/bin:$PATH
 
 alias anslint='ansible-lint -f sarif --nocolor > test/ansible-lint-output.sarif'
 alias awsconsole="aws-console --profile $AWS_PROFILE --stdout"
