@@ -191,6 +191,16 @@ PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND; }auto_venv; dedup_path"
 
 alias delautobranch='git branch | fgrep autobackup | tr "\n" " " | delete_branches.sh'
 
+alias ghmar="gh api --hostname git.marriott.com"
+
+function ghuser() {
+    gh api --hostname git.marriott.com "users/$1" | jq -r '{login: .login, id: .id, name: .name}'
+}
+
+function ycurl() {
+    (echo -e "---\n"; curl "$@" | yq -y)
+}
+
 # machine-specific configuration
 {{- if eq .chezmoi.hostname "hdqncnmdj01" }}
 # This machine doesn't have access to public github
@@ -205,9 +215,3 @@ function explain() {
     ghce --hostname github.com "$@" | tail -n +7
 }
 {{- end }}
-
-alias ghmar="gh api --hostname git.marriott.com"
-
-function ghuser() {
-    gh api --hostname git.marriott.com "users/$1" | jq -r '{login: .login, id: .id, name: .name}'
-}
