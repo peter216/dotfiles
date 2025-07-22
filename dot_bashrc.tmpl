@@ -1,6 +1,9 @@
 # Set hostname variable
 export HOSTNAME=$(hostname)
 
+# Project-specific PATH and aliases
+export PATH=~/.uv/.venv/bin:~/.local/bin:~/bin:/usr/libexec/rancid:~/go/bin:$PATH
+
 # ~/.bashrc: executed by bash(1) for non-login shells.
 
 # If not running interactively, don't do anything
@@ -114,9 +117,6 @@ export ANSIBLE_VAULT_PASSWORD_FILE=~/.vault_pass
 export ANSIBLE_DEPRECATION_WARNINGS=False
 export ANSIBLE_PYTHON_INTERPRETER=~/.uv/.venv/bin/python3
 export ANSIBLE_NAVIGATOR_PLAYBOOK_ARTIFACT_SAVE_AS="{playbook_dir}/logs/{playbook_name}-artifact-{time_stamp}.json"
-
-# Project-specific PATH and aliases
-export PATH=~/.uv/.venv/bin:~/.local/bin:~/bin:/usr/libexec/rancid:~/go/bin:$PATH
 
 alias anslint='ansible-lint -f sarif --nocolor > test/ansible-lint-output.sarif'
 alias awsconsole="aws-console --profile $AWS_PROFILE --stdout"
