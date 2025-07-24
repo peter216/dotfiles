@@ -113,9 +113,8 @@ if ! shopt -oq posix; then
 fi
 
 # Environment variables for Ansible
-export ANSIBLE_VAULT_PASSWORD_FILE=~/.vault_pass
 export ANSIBLE_DEPRECATION_WARNINGS=False
-export ANSIBLE_PYTHON_INTERPRETER=~/.uv/.venv/bin/python3
+export ANSIBLE_PYTHON_INTERPRETER=$(/usr/bin/env python3 -c "import sys; print(sys.executable)")
 export ANSIBLE_NAVIGATOR_PLAYBOOK_ARTIFACT_SAVE_AS="{playbook_dir}/logs/{playbook_name}-artifact-{time_stamp}.json"
 
 alias anslint='ansible-lint -f sarif --nocolor > test/ansible-lint-output.sarif'
