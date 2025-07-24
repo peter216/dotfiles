@@ -216,10 +216,26 @@ function explain() {
 }
 {{- end }}
 
-# Load environment variables from secret cache
+# Load these environment variables from secret cache at launch
 export $(gopass cat .env-vars | jq -r 'to_entries|map("\(.key)=\(.value|@sh)")|.[]')
+
+# Function to load json formatted secrets from gopass
+function gopassload() {
+    local secrets
+    secrets=`gopass cat "$1" | jq -r 'to_entries|map("\(.key)=\(.value|@sh)")|.[]'`
+    if [ $? -ne 0 ]; then
+        echo "Error retrieving secrets from $1"
+        return 1
+    fi
+    export $secrets
+}
 
 # Cat a secret from the cache
 function gopassget() {
-    echo $(gopass cat $1)
+    local secret_output=`gopass cat $1`
+    if [ $? -ne 0 ]; then
+        echo "Error retrieving secret: $1"
+        return 1
+    fi
+    echo "$secret_output"
 }
