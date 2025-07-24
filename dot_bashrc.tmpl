@@ -94,6 +94,7 @@ alias la='ls -A'
 alias l='ls -CF'
 alias cm='chezmoi'
 alias cmcd="cd $(chezmoi source-path)"
+alias cleargpg="echo RELOADAGENT | gpg-connect-agent"
 
 # Add an "alert" alias for long running commands
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
