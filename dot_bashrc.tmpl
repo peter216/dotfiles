@@ -215,3 +215,11 @@ function explain() {
     ghce --hostname github.com "$@" | tail -n +7
 }
 {{- end }}
+
+# Load environment variables from secret cache
+export $(gopass cat .env-vars | jq -r 'to_entries|map("\(.key)=\(.value|@sh)")|.[]')
+
+# Cat a secret from the cache
+function gopassget() {
+    echo $(gopass cat $1)
+}
