@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# This script is used to run functions from gh (github cli)
+
+# Usage:
+# gh_func run_list <workflow_name> <args>
+
+if [ $# -eq 0 ]; then
+    echo "No function specified"
+    exit 1
+fi
+
+if [ "$1" == "run_list" ]; then
+    if [ $# -ne 2 ]; then
+        echo "Usage: gh_func run_list <workflow_name>"
+        exit 1
+    fi
+    RUNS=$(gh run list --workflow "$2" --json url | jq '.[].url' | tr -d '"' | rev | cut -d/ -f1 | rev | sort -n)
+    echo $(tr '\n' ' ' <<< "$RUNS")
+    exit 0
+fi
+
+if [ "$1" == "run_delete" ]; then
+    if [ $# -ne 3 ]; then
+        echo "Usage: gh_func run_delete <workflow_name> <save_num>"
+        exit 1
+    fi
+    WORKFLOW=$2
+    SAVENUM=$(( $3 + 1 ))
+    RUNS=$(gh run list --workflow "$WORKFLOW" --json url | jq '.[].url' | tr -d '"' | rev | cut -d/ -f1 | rev | sort -n)
+    DELETE_RUNS=$(echo $RUNS | cut -d' ' -f $SAVENUM-)
+    for RUN in $DELETE_RUNS; do
+        gh run delete $RUN
+    done
+    exit 0
+fi

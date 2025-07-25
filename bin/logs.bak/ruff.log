@@ -1,0 +1,41 @@
+[1minventory_from_csv.py[0m[36m:[0m27[36m:[0m7[36m:[0m [1;31mF811[0m Redefinition of unused `InventoryModule` from line 23
+[1;38;5;12m   |[0m
+[1;38;5;12m27 |[0m class InventoryModule(BaseInventoryPlugin):
+[1;38;5;12m   |[0m[1;38;5;9m       ^^^^^^^^^^^^^^^[0m [1;38;5;9mF811[0m
+[1;38;5;12m28 |[0m     NAME = "inventory_from_csv"  # used internally by Ansible, it should match the file name but not required
+[1;38;5;12m   |[0m
+   [1;38;5;12m=[0m [1;38;5;14mhelp[0m: Remove definition: `InventoryModule`
+
+[1mparse_python_from_gha.py[0m[36m:[0m36[36m:[0m53[36m:[0m [1;31mE741[0m Ambiguous variable name: `l`
+[1;38;5;12m   |[0m
+[1;38;5;12m34 |[0m     output[num] = []
+[1;38;5;12m35 |[0m     lines = match.split("\n")
+[1;38;5;12m36 |[0m     minindent = min([(len(l) - len(l.lstrip())) for l in lines if len(l.strip()) > 0])
+[1;38;5;12m   |[0m[1;38;5;9m                                                     ^[0m [1;38;5;9mE741[0m
+[1;38;5;12m37 |[0m     for line in lines:
+[1;38;5;12m38 |[0m         unindent_re = re.compile(r"^\s{%d}" % minindent)
+[1;38;5;12m   |[0m
+
+[1mpretty.py[0m[36m:[0m54[36m:[0m5[36m:[0m [1;31mE722[0m Do not use bare `except`
+[1;38;5;12m   |[0m
+[1;38;5;12m52 |[0m     try:
+[1;38;5;12m53 |[0m         output_text = make_pretty(unformatted_text)
+[1;38;5;12m54 |[0m     except:
+[1;38;5;12m   |[0m[1;38;5;9m     ^^^^^^[0m [1;38;5;9mE722[0m
+[1;38;5;12m55 |[0m         try:
+[1;38;5;12m56 |[0m             output_text = format_json(unformatted_text)
+[1;38;5;12m   |[0m
+
+[1mpretty.py[0m[36m:[0m57[36m:[0m9[36m:[0m [1;31mE722[0m Do not use bare `except`
+[1;38;5;12m   |[0m
+[1;38;5;12m55 |[0m         try:
+[1;38;5;12m56 |[0m             output_text = format_json(unformatted_text)
+[1;38;5;12m57 |[0m         except:
+[1;38;5;12m   |[0m[1;38;5;9m         ^^^^^^[0m [1;38;5;9mE722[0m
+[1;38;5;12m58 |[0m             print(f"Failed to parse {input_file}")
+[1;38;5;12m59 |[0m             exit(1)
+[1;38;5;12m   |[0m
+
+Found 19 errors (15 fixed, 4 remaining).
+2 files reformatted, 10 files left unchanged
+Found 2 errors (2 fixed, 0 remaining).

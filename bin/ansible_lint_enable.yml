@@ -1,0 +1,71 @@
+---
+- name: Ensure ansible.validation.lint.enabled exists and toggle its value
+  hosts: localhost
+  gather_facts: false
+  vars:
+    settings_file: "{{ launch_folder }}/.vscode/settings.json"
+  tasks:
+    - name: Debug launch_folder
+      ansible.builtin.debug:
+        var: launch_folder
+      tags: debug
+
+    - name: Ensure .vscode directory exists
+      ansible.builtin.file:
+        path: "{{ launch_folder }}/.vscode"
+        state: directory
+        mode: "0755"
+      tags: always
+
+    - name: Ensure .vscode/settings.json exists
+      ansible.builtin.file:
+        path: "{{ settings_file }}"
+        state: touch
+        mode: "0644"
+      tags: always
+
+    - name: Stat the settings.json file
+      ansible.builtin.stat:
+        path: "{{ settings_file }}"
+      register: settings_file_stat
+      tags: always
+
+    - name: If settings.json is empty, create a default settings.json
+      ansible.builtin.template:
+        src: settings.json.j2
+        dest: "{{ settings_file }}"
+        mode: "0644"
+      when: settings_file_stat.stat.size == 0
+      tags: always
+
+    # Read the settings.json file
+    - name: Read the settings.json file
+      ansible.builtin.set_fact:
+        settings: "{{ lookup('file', settings_file) | from_json }}"
+      tags: always
+
+    # - name: Read the current settings.json content
+    #   ansible.builtin.slurp:
+    #     src: "{{ settings_file }}"
+    #   register: settings_content
+    #   tags: always
+
+    # - name: Convert settings.json content to a dictionary
+    #   ansible.builtin.set_fact:
+    #     settings: "{{ settings_content.content | b64decode | from_json }}"
+    #   tags: always
+
+    - name: Ensure ansible.validation.lint.enabled key exists
+      ansible.builtin.set_fact:
+        settings: "{{ settings | combine({'ansible.validation.lint.enabled': enabled_bool}) }}"
+      # when: settings.get('ansible.validation.lint.enabled') is not defined
+      vars:
+        enabled_bool: "{{ true if 'set_true' in ansible_run_tags else false }}"
+      tags: always
+
+    - name: Write updated settings back to settings.json
+      ansible.builtin.copy:
+        content: "{{ settings | to_nice_json }}"
+        dest: "{{ settings_file }}"
+        mode: "0644"
+      tags: always

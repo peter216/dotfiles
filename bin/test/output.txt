@@ -1,0 +1,153 @@
+Help on module get_jira_stories:
+
+NAME
+    get_jira_stories
+
+DESCRIPTION
+    Jira Stories Retrieval Tool
+    ===========================
+
+    This script retrieves Jira stories for a specific fix version and assignee,
+    then exports the data to a CSV file for further analysis.
+
+    Requirements:
+    -------------
+    - requests
+    - pandas
+    - python-dotenv (optional for env var management)
+
+    Usage:
+    ------
+    1. Set the JIRA_TOKEN environment variable with your Jira API token.
+    2. To get your id for the MY_ID variable, run the following command:
+
+    .. code-block:: bash
+
+        curl -k -u $YOUREMAIL:$JIRA_TOKEN -X GET https://marriottcloud.atlassian.net/rest/api/3/myself 2>/dev/null | jq '.accountId'
+
+    3. Run the script: ``python get_jira_stories.py``
+    4. The output will be saved to a CSV file named ``jira-{FIX_VERSION}.csv``.
+
+FUNCTIONS
+    export_to_csv(data: List[Dict[str, Any]], filename: str) -> None
+        Export the processed data to a CSV file.
+
+        Args:
+            data (List[Dict[str, Any]]): The data to export.
+            filename (str): The output filename.
+
+        Raises:
+            IOError: If writing to the file fails.
+
+    extract_sprint(sprints: Optional[List[Dict[str, Any]]], fix_version: str) -> Optional[str]
+        Extract the sprint name for the given fix version.
+
+        Args:
+            sprints (Optional[List[Dict[str, Any]]]): List of sprint data.
+            fix_version (str): The fix version to match.
+
+        Returns:
+            Optional[str]: The sprint name if found, None otherwise.
+
+    fetch_jira_data(token: str) -> Dict[str, Any]
+        Fetch Jira data from the API.
+
+        Args:
+            token (str): The Jira API token.
+
+        Returns:
+            Dict[str, Any]: The JSON response data.
+
+        Raises:
+            requests.RequestException: If the API request fails.
+            ValueError: If the response is not valid JSON or doesn't contain expected data.
+
+    get_jira_token() -> str
+        Retrieve the Jira API token from environment variables.
+
+        Returns:
+            str: The Jira API token.
+
+        Raises:
+            EnvironmentError: If the JIRA_TOKEN environment variable is not set.
+
+    main() -> None
+        Main function to orchestrate the Jira data retrieval and processing.
+
+    parse_datetime(date_str: str) -> datetime.datetime
+        Parse a datetime string from Jira API.
+
+        Args:
+            date_str (str): The datetime string to parse.
+
+        Returns:
+            datetime: The parsed datetime object.
+
+        Raises:
+            ValueError: If the string cannot be parsed.
+
+    process_jira_data(jdata: Dict[str, Any]) -> List[Dict[str, Any]]
+        Process Jira data and extract relevant information.
+
+        Args:
+            jdata (Dict[str, Any]): The Jira API response data.
+
+        Returns:
+            List[Dict[str, Any]]: Processed list of issues with extracted data.
+
+DATA
+    ATLASSIAN_XSRF_TOKEN = '24d48080365b828c11d174850b6ae4ecc0f59a2d_lin'
+    BASE_URL = 'https://marriottcloud.atlassian.net//rest/api/3/search'
+    DATE_FORMAT = '%Y-%m-%dT%H:%M:%S.%f%z'
+    DATE_FORMAT_SHORT = '%Y%m%d'
+    Dict = typing.Dict
+        A generic version of dict.
+
+    FIELDS = ['title', 'link', 'summary', 'type', 'status', 'assignee', 'r...
+    FIX_VERSION = 'NTWK.25.PI2'
+    List = typing.List
+        A generic version of list.
+
+    MY_ID = '712020:54acb322-73e9-47de-828f-0607b8c6ffba'
+    OUTPUT_FILE = 'jira-NTWK.25.PI2.csv'
+    Optional = typing.Optional
+        Optional[X] is equivalent to Union[X, None].
+
+    PROJECT_NAME = 'NTWK'
+    Union = typing.Union
+        Union type; Union[X, Y] means either X or Y.
+
+        On Python 3.10 and higher, the | operator
+        can also be used to denote unions;
+        X | Y means the same thing to the type checker as Union[X, Y].
+
+        To define a union, use e.g. Union[int, str]. Details:
+        - The arguments must be types and there must be at least one.
+        - None as an argument is a special case and is replaced by
+          type(None).
+        - Unions of unions are flattened, e.g.::
+
+            assert Union[Union[int, str], float] == Union[int, str, float]
+
+        - Unions of a single argument vanish, e.g.::
+
+            assert Union[int] == int  # The constructor actually returns int
+
+        - Redundant arguments are skipped, e.g.::
+
+            assert Union[int, str, int] == Union[int, str]
+
+        - When comparing unions, the argument order is ignored, e.g.::
+
+            assert Union[int, str] == Union[str, int]
+
+        - You cannot subclass or instantiate a union.
+        - You can use Optional[X] as a shorthand for Union[X, None].
+
+    __annotations__ = {'ATLASSIAN_XSRF_TOKEN': <class 'str'>, 'BASE_URL': ...
+    logger = <Logger jira_stories (INFO)>
+
+FILE
+    /home/prube194/bin/get_jira_stories.py
+
+

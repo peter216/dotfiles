@@ -1,0 +1,80 @@
+Config file not found '/home/prube194/bin/.ansible-lint'
+INFO     Identified /home/prube194/bin as project root due .git directory.
+INFO     Collection paths was patched to include extra directories /home/prube194/.ansible/collections,/usr/share/ansible/collections,/home/prube194/.cache/pre-commit/repo326iq981/py_env-python3.12/lib/python3.12/dist-packages,/home/prube194/.cache/pre-commit/repo326iq981/py_env-python3.12/lib/python3/dist-packages,/home/prube194/.cache/pre-commit/repo326iq981/py_env-python3.12/local/lib/python3.12/dist-packages,/home/prube194/.cache/pre-commit/repo326iq981/py_env-python3.12/lib/python3.12/site-packages
+INFO     Set ANSIBLE_LIBRARY=/home/prube194/bin/.ansible/modules:/home/prube194/.ansible/plugins/modules:/usr/share/ansible/plugins/modules
+INFO     Set ANSIBLE_COLLECTIONS_PATH=/home/prube194/bin/.ansible/collections:/home/prube194/.ansible/collections:/usr/share/ansible/collections:/home/prube194/.cache/pre-commit/repo326iq981/py_env-python3.12/lib/python3.12/dist-packages:/home/prube194/.cache/pre-commit/repo326iq981/py_env-python3.12/lib/python3/dist-packages:/home/prube194/.cache/pre-commit/repo326iq981/py_env-python3.12/local/lib/python3.12/dist-packages:/home/prube194/.cache/pre-commit/repo326iq981/py_env-python3.12/lib/python3.12/site-packages
+INFO     Set ANSIBLE_ROLES_PATH=/home/prube194/bin/.ansible/roles:/home/prube194/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles
+INFO     Loading ignores from .gitignore
+INFO     Excluded: .ansible/collections
+INFO     Excluded: .git
+INFO     Excluded: .pre-commit-config.yaml
+INFO     Excluded: .ruff_cache
+INFO     Excluded: __pycache__
+INFO     Excluded: logs
+INFO     Excluded: test
+INFO     Executing syntax check on playbook ansible_lint_enable.yml (1.20s)
+INFO     Executing syntax check on playbook create_code_workspace_file.yml (1.20s)
+WARNING  Listing 17 violation(s) that are fatal
+name[casing]: All names should start with an uppercase letter.
+create_code_workspace_file.yml:3
+
+fqcn[action-core]: Use FQCN for builtin module actions (file).
+create_code_workspace_file.yml:9 Use `ansible.builtin.file` or `ansible.legacy.file` instead.
+
+yaml[truthy]: Truthy value should be one of [false, true]
+create_code_workspace_file.yml:14
+
+fqcn[action-core]: Use FQCN for builtin module actions (template).
+create_code_workspace_file.yml:16 Use `ansible.builtin.template` or `ansible.legacy.template` instead.
+
+risky-file-permissions: File permissions unset or incorrect.
+create_code_workspace_file.yml:16 Task/Handler: Create the workspace file
+
+fqcn[action-core]: Use FQCN for builtin module actions (file).
+create_code_workspace_file.yml:21 Use `ansible.builtin.file` or `ansible.legacy.file` instead.
+
+yaml[truthy]: Truthy value should be one of [false, true]
+create_code_workspace_file.yml:26
+
+command-instead-of-shell: Use shell only when shell functionality is required.
+create_code_workspace_file.yml:32 Task/Handler: ls the workspace directory
+
+fqcn[action-core]: Use FQCN for builtin module actions (shell).
+create_code_workspace_file.yml:32 Use `ansible.builtin.shell` or `ansible.legacy.shell` instead.
+
+name[casing]: All names should start with an uppercase letter.
+create_code_workspace_file.yml:32 Task/Handler: ls the workspace directory
+
+no-changed-when: Commands should not change things if nothing needs doing.
+create_code_workspace_file.yml:32 Task/Handler: ls the workspace directory
+
+command-instead-of-shell: Use shell only when shell functionality is required.
+create_code_workspace_file.yml:36 Task/Handler: ls the git folders
+
+fqcn[action-core]: Use FQCN for builtin module actions (shell).
+create_code_workspace_file.yml:36 Use `ansible.builtin.shell` or `ansible.legacy.shell` instead.
+
+name[casing]: All names should start with an uppercase letter.
+create_code_workspace_file.yml:36 Task/Handler: ls the git folders
+
+no-changed-when: Commands should not change things if nothing needs doing.
+create_code_workspace_file.yml:36 Task/Handler: ls the git folders
+
+fqcn[action-core]: Use FQCN for builtin module actions (debug).
+create_code_workspace_file.yml:42 Use `ansible.builtin.debug` or `ansible.legacy.debug` instead.
+
+fqcn[action-core]: Use FQCN for builtin module actions (debug).
+create_code_workspace_file.yml:46 Use `ansible.builtin.debug` or `ansible.legacy.debug` instead.
+
+Read documentation for instructions on how to ignore specific rule violations.
+
+# Rule Violation Summary
+
+  2 command-instead-of-shell profile:basic tags:command-shell,idiom
+  2 yaml profile:basic tags:formatting,yaml
+  3 name profile:basic tags:idiom
+  1 risky-file-permissions profile:basic tags:unpredictability
+  2 no-changed-when profile:basic tags:command-shell,idempotency
+  7 fqcn profile:basic tags:formatting
+
+Failed: 17 failure(s), 0 warning(s) on 62 files. Last profile that met the validation criteria was 'min'.

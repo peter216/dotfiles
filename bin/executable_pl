@@ -1,0 +1,216 @@
+#!/usr/bin/bash
+# Description: This script is a wrapper for the parselog.py script, which processes ansible log files and opens the results in Visual Studio Code.
+# The script separates specified hostnames from the input file and allows for various options such as skipping tasks, verbose output, and more.
+#
+# Example usage:
+# pl -s -n hostname1 -n hostname2 job_17415.txt
+# pl -a job_17535.txt
+
+# ANSI color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+NC='\033[0m' # No Color
+
+# Initialize variables
+skip=false
+all=false
+verbose=false
+debug=false
+test=false
+hostnames=()
+
+# Function to display usage information
+usage() {
+    echo "Usage:"
+    echo
+    echo "    pl [-s] [-a] [-n hostname] filename"
+    echo
+    echo "-s (skip skipped tasks) is optional and defaults to false"
+    echo "-a finds all hosts in the input file and matches them"
+    echo "-n specifies a hostname (can be used multiple times)"
+    echo "-v verbose output"
+    echo "-h prints this help message"
+    echo "filename is the positional parameter at the end"
+    echo
+    echo "Example usage:"
+    echo
+    echo "    pl -s -n TESTLABS78 -n TESTLABS245 job_17415.txt"
+    echo "    pl -a job_17535.txt"
+    echo
+}
+
+# Example usage:
+# pl -s -a -n marriott-east -n marriott-west ~/git/vault-client-scripts/parselog.py
+
+# Parse command-line options
+while getopts ":n:savh" opt; do
+    case ${opt} in
+    s)
+        skip=true
+        ;;
+    a)
+        all=true
+        ;;
+    n)
+        hostnames+=("$OPTARG")
+        ;;
+    v)
+        verbose=true
+        ;;
+    h)
+        usage
+        exit 0
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2
+        usage
+        exit 1
+        ;;
+    :)
+        echo "Option -$OPTARG requires an argument." >&2
+        usage
+        exit 1
+        ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+if [ "$debug" == true ]; then
+    echo -e "${YELLOW}Debug mode enabled${NC}"
+fi
+if [ "$verbose" == true ]; then
+    echo -e "${YELLOW}Verbose mode enabled${NC}"
+fi
+if [ "$test" == true ]; then
+    echo -e "${YELLOW}Test mode enabled${NC}"
+fi
+
+# Check if filename is provided
+if [ $# -lt 1 ]; then
+    echo -e "${RED}Error: No filename provided${NC}"
+    usage
+    exit 1
+fi
+
+# The last argument is the filename
+filename=$1
+
+# We cannot have both hostnames and all
+if $all; then
+    if [ ${#hostnames[@]} -gt 0 ]; then
+        echo -e "${RED}Error: -a and -n cannot be used together${NC}"
+        usage
+        exit 1
+    fi
+fi
+
+# We must have either hostnames or all
+if ! $all && [ ${#hostnames[@]} -eq 0 ]; then
+    echo -e "${RED}Error: Must specify either -a or -n${NC}"
+    usage
+    exit 1
+fi
+
+# We must have a filename
+if [ -z "$filename" ]; then
+    echo -e "${RED}Error: No filename provided${NC}"
+    usage
+    exit 1
+fi
+
+# File must exist
+if [ ! -f "$filename" ]; then
+    echo -e "${RED}Error: File $filename does not exist${NC}"
+    usage
+    exit 1
+fi
+
+if $all; then
+    hostnames_str="-a"
+else
+    hostnames_str=""
+    for hostname in "${hostnames[@]}"; do
+        hostnames_str+=" -n $hostname"
+    done
+fi
+
+if $skip; then
+    skip_str="-s"
+else
+    skip_str=""
+fi
+
+if $verbose; then
+    verbose_str="-v"
+else
+    verbose_str=""
+fi
+
+if [ "$verbose" == true -o "$debug" == true ]; then
+    echo ">>>>>>>>>>>>>>> VARIABLES <<<<<<<<<<<<<<"
+    echo -e ">>> skip           : ${CYAN}$skip${NC}"
+    echo -e ">>> all            : ${CYAN}$all${NC}"
+    echo -e ">>> hostnames      : ${CYAN}${hostnames[@]}${NC}"
+    echo -e ">>> filename       : ${CYAN}$filename${NC}"
+    echo -e ">>> hostnames_str  : ${CYAN}$hostnames_str${NC}"
+    echo -e ">>> skip_str       : ${CYAN}$skip_str${NC}"
+    echo -e ">>> verbose        : ${CYAN}$verbose${NC}"
+    echo -e ">>> verbose_str    : ${CYAN}$verbose_str${NC}"
+fi
+
+command=$(echo "~/bin/parselog.py $skip_str $verbose_str $hostnames_str -f $filename" | tr -s " ")
+if [ "$debug" == true -o "$verbose" == true ]; then
+    echo ">>>>>>>>> CALLING PARSE SCRIPT <<<<<<<<<"
+    echo -e "${GREEN}$command${NC}"
+else
+    echo -e "${GREEN}Running parselog.py${NC}"
+fi
+
+if [ "$test" != true ]; then
+    outputdir=$(bash -c "$command")
+fi
+
+if [ $? -ne 0 -o -z "$outputdir" ]; then
+    if [ "$test" != true ]; then
+        echo -e "${RED}Error: parselog.py failed${NC}"
+        exit 1
+    fi
+fi
+
+# Open each file in the output directory
+
+# Exclude the pattern "*localhost*" from the list of files to open
+parsed_files=$(find $outputdir -type f | grep -v "localhost")
+parsed_files_str=""
+for file in $parsed_files; do
+    file_basename=$(echo $file | cut -d "/" -f 2-)
+    parsed_files_str+=" $file_basename"
+    if [ "$debug" == true -o "$verbose" == true ]; then
+        echo -e "${YELLOW}file: $file${NC}"
+        echo -e "${YELLOW}file_basename: $file_basename${NC}"
+        echo -e "${YELLOW}parsed_files_str: $parsed_files_str${NC}"
+    fi
+done
+parsed_files_str=$(echo $parsed_files_str | tr -s " ")
+
+if [ "$debug" == true -o "$verbose" == true ]; then
+    echo ">>>>>>>>>>>>> OPENING FILES <<<<<<<<<<<<"
+    echo -e ">>> parsed_files     : ${CYAN}$parsed_files${NC}"
+    echo -e ">>> parsed_files_str : ${CYAN}$parsed_files_str${NC}"
+    echo -e ">>> command          : ${GREEN}code -r $parsed_files_str${NC}"
+    echo -e ">>> outputdir        : ${CYAN}$outputdir${NC}"
+    for file in $parsed_files; do
+        echo -e ">>> file              : ${CYAN}$file${NC}"
+    done
+fi
+
+if [ "$test" != true ]; then
+    # Copy the input file to the output directory
+    cp $filename $outputdir
+    cd $outputdir
+    bash -c "code -r $parsed_files_str"
+    cd -
+fi

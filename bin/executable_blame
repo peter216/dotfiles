@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+"""
+git blame a file
+
+Usage:
+
+blame.py <filename> [-m <mode>] [-w <window>]
+
+Options:
+
+-m <mode>  : ansi or html (default: ansi)
+-w <window> : vscode or browser (default: vscode)
+
+If mode is ansi, default window is vscode.
+If mode is html, default window is browser.
+
+Files will appear in $HOME/tmp/blame directory.
+
+Example:
+
+blame.py file.txt -m ansi -w vscode
+
+Output:
+
+file.txt.blame.ansi
+
+Author: Peter Rubenstein (peter.rubenstein@marriott.com)
+"""
+
+import argparse
+import os
+import sys
+
+
+def main():
+
+    # User directory
+    home = os.path.expanduser("~")
+    tmp_dir = f"{home}/tmp/blame"
+    os.makedirs(tmp_dir, exist_ok=True)
+
+    parser = argparse.ArgumentParser(description="Blame a file")
+    parser.add_argument("filename", help="The filename to blame")
+    parser.add_argument(
+        "--mode",
+        "-m",
+        choices=["ansi", "html"],
+        default="ansi",
+        help="The mode to use (ansi or html)",
+    )
+    parser.add_argument(
+        "--window",
+        "-w",
+        choices=["vscode", "browser", "none"],
+        default=None,
+        help="The window to open the output in (vscode or browser)",
+    )
+    args = parser.parse_args()
+
+    filename = args.filename
+    mode = args.mode
+    window = args.window
+
+    if window is None:
+        if mode == "ansi":
+            window = "vscode"
+        else:
+            window = "browser"
+
+    file_basename = os.path.basename(filename)
+    file_dirname = os.path.dirname(filename)
+    file_abspath = os.path.abspath(file_dirname)
+    abspath_current_dir = os.path.abspath(os.getcwd())
+    if file_abspath != abspath_current_dir:
+        os.chdir(file_abspath)
+    output_file = f"{tmp_dir}/{file_basename}.blame.{mode}"
+
+    if mode == "ansi":
+        command1 = f"git blame -w --color-by-age {file_basename} > {output_file}"
+    elif mode == "html":
+        command1 = (
+            f"git blame -w --color-by-age {file_basename} | aha --black > {output_file}"
+        )
+    else:
+        print(f"Invalid mode: {mode}")
+        sys.exit(1)
+
+    if window == "vscode":
+        command2 = f"code {output_file}"
+    elif window == "browser":
+        if mode == "html":
+            command2 = f"open {output_file}"
+        else:
+            print(f"Option not supported.")
+            sys.exit(1)
+    else:
+        print(f"Supplied window option: {window}")
+
+    for command in [command1, command2]:
+        print(command)
+        os.system(command)
+
+
+if __name__ == "__main__":
+    main()

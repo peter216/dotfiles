@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+# Option 1
+# Usage: diff2html_remote.sh file1 file2
+# Example: diff2html_remote.sh file1.txt file2.txt
+
+# Option 2
+# Usage: diff2html_remote.sh formatted_diff_file
+# Example: diff2html_remote.sh formatted_diff_file.diff
+
+# Option 3
+# Usage: create_diff.sh | diff2html_remote.sh [title]
+
+# Verify that two arguments are provided
+if [ "$#" -eq 2 ]; then
+    title="$1 <-> $2"
+    file_basename="$1-$2"
+    diff -U1000 $1 $2 > $file_basename.diff
+    scp $file_basename.diff J1:
+    ssh -n J1 "diff2html --cs dark --title \"$title\" -i file -s side -o stdout -- $file_basename.diff" > $file_basename.diff.html
+    echo "Text output: $file_basename.diff"
+    echo "HTML output: $file_basename.diff.html"
+elif [ -p /dev/stdin ]; then
+    echo "Reading from stdin..."
+    if [ "$#" -eq 1 ]; then
+        title="$1"
+        file_basename="$1"
+    elif [ "$#" -eq 0 ]; then
+        title="stdin_diff"
+        file_basename="stdin_diff"
+    else
+        echo "Invalid number of arguments for stdin input."
+        exit 1
+    fi
+    data=$(cat -)
+    echo "$data" > $file_basename.diff
+    scp $file_basename.diff J1:
+    ssh -n J1 "diff2html --cs dark --title $title -i file -s side -o stdout -- $file_basename.diff" > $file_basename.diff.html
+    echo "Text output: $file_basename.diff"
+    echo "HTML output: $file_basename.diff.html"
+elif [ "$#" -eq 1 ]; then
+    title="$1"
+    if [[ "$1" == *.diff ]]; then
+        file_basename="$1"
+    else
+        file_basename="${1}.diff"
+    fi
+    scp $file_basename J1:
+    ssh -n J1 "diff2html --cs dark --title $title -i file -s side -o stdout -- $file_basename" > $file_basename.html
+    echo "HTML output: $file_basename.html"
+else
+    echo "Usage: $0 file1 file2"
+    echo "or"
+    echo "Usage: $0 formatted_diff_file"
+    echo "or"
+    echo "Usage: create_diff.sh | $0 [title]"
+    exit 1
+fi
+echo "Open html file in browser?"
+read -p "Press Enter to open the HTML file in your default browser or Ctrl+C to cancel: "
+if [ -f "$file_basename.html" ]; then
+    xdg-open "$file_basename.html" || open "$file_basename.html" || start "$file_basename.html"
+else
+    echo "HTML file not found: $file_basename.html"
+fi

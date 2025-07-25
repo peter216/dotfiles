@@ -1,3 +1,4 @@
+
 # Set hostname variable
 export HOSTNAME=$(hostname)
 
@@ -117,6 +118,7 @@ fi
 export ANSIBLE_DEPRECATION_WARNINGS=False
 export ANSIBLE_PYTHON_INTERPRETER=$(/usr/bin/env python3 -c "import sys; print(sys.executable)")
 export ANSIBLE_NAVIGATOR_PLAYBOOK_ARTIFACT_SAVE_AS="{playbook_dir}/logs/{playbook_name}-artifact-{time_stamp}.json"
+export ANSIBLE_VAULT_PASSWORD_FILE=~/bin/vault_pass.sh
 
 alias anslint='ansible-lint -f sarif --nocolor > test/ansible-lint-output.sarif'
 alias awsconsole="aws-console --profile $AWS_PROFILE --stdout"
@@ -193,19 +195,11 @@ alias delautobranch='git branch | fgrep autobackup | tr "\n" " " | delete_branch
 
 alias ghmar="gh api --hostname git.marriott.com"
 
-function ghuser() {
-    gh api --hostname git.marriott.com "users/$1" | jq -r '{login: .login, id: .id, name: .name}'
-}
-
 function ycurl() {
     (echo -e "---\n"; curl "$@" | yq -y)
 }
 
 # machine-specific configuration
-{{- if eq .chezmoi.hostname "hdqncnmdj01" }}
-# This machine doesn't have access to public github
-{{- end }}
-{{- if ne .chezmoi.hostname "hdqncnmdj01" }}
 # github copilot cli
 eval "$(gh copilot alias -- bash)"
 function suggest() {
@@ -214,11 +208,11 @@ function suggest() {
 function explain() {
     ghce --hostname github.com "$@" | tail -n +7
 }
-{{- end }}
 
 # Load these environment variables from secret cache at launch
 if gopass cat .env-vars &>/dev/null; then
-    export $(gopass cat .env-vars | jq -r 'to_entries|map("\(.key)=\(.value|@sh)")|.[]')
+    # Use eval to correctly process the shell-escaped output from jq
+    eval "$(gopass cat .env-vars | jq -r 'to_entries|map("export \(.key)=\(.value|@sh)")|.[]')"
 fi
 
 # Function to load json formatted secrets from gopass
@@ -229,9 +223,8 @@ function gopassload() {
         echo "Error retrieving secrets from $1"
         return 1
     fi
-    local secret_data
-    secret_data="$(echo "$secrets" | jq -r 'to_entries|map("\(.key)=\(.value|@sh)")|.[]')"
-    export $secret_data
+    # Use eval to correctly process the shell-escaped output from jq
+    eval "$(echo "$secrets" | jq -r 'to_entries|map("export \(.key)=\(.value|@sh)")|.[]')"
 }
 
 # Cat a secret from the cache
@@ -243,4 +236,11 @@ function gopassget() {
         return 1
     fi
     echo "$secret_output"
+}
+
+# Login to gh on the Enterprise instance
+echo $GITHUB_ENT_TOKEN | gh auth login --hostname git.marriott.com --with-token
+
+function ghuser() {
+    gh api --hostname git.marriott.com "users/$1" | jq -r '{login: .login, id: .id, name: .name}'
 }

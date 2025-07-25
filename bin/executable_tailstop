@@ -1,0 +1,18 @@
+#!/usr/bin/bash
+
+# File to tail
+file_to_tail=$1
+# Keyword to stop tailing
+keyword=$2
+
+# Define the trap to handle SIGTERM
+trap : SIGTERM
+
+# Tail the file and stop when the keyword appears
+tail -f "$file_to_tail" | while read -r line; do
+  echo "$line"
+  if [[ "$line" == *"$keyword"* ]]; then
+    echo ">>>>>>>>>>> Keyword $keyword found. Stopping tail."
+    pkill -P $$ tail >/dev/null 2>&1
+  fi
+done

@@ -1,0 +1,88 @@
+#!/usr/bin/bash
+
+usage() {
+  echo "Usage: findf [-t type] [-n name] [-d extra-dirs] [-g grep_regex] [-v]"
+  echo "Find all paths of name and optional type below current directory"
+  echo "While exluding directories .venv, .git, and .collections"
+  echo "  type defaults to 'f' (files)"
+  exit 1
+}
+
+# Initialize variables
+TYPE="f" # Default to files
+NAME=""
+EXTRA_DIRS=""
+EXTRA_DIRS_STRING=""
+VERBOSE=false
+
+# Read cli args
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  -h | --help)
+    usage
+    ;;
+  -t | -type)
+    shift
+    [[ $# -eq 0 ]] && echo "Missing type argument" && usage
+    TYPE="$1"
+    shift
+    ;;
+  -n | -name)
+    shift
+    [[ $# -eq 0 ]] && echo "Missing name argument" && usage
+    NAME="$1"
+    shift
+    ;;
+  -d | -extra-dirs)
+    shift
+    [[ $# -eq 0 ]] && echo "Missing name argument" && usage
+    EXTRA_DIRS="$1"
+    shift
+    ;;
+  -g | --grep)
+    shift
+    [[ $# -eq 0 ]] && echo "Missing grep argument" && usage
+    GREP="$1"
+    shift
+    ;;
+  -v | -verbose)
+    VERBOSE=true
+    set -x
+    shift
+    ;;
+  *)
+    usage
+    ;;
+  esac
+done
+
+# Validate required arguments
+[[ -z "$NAME" ]] && echo "Name is required" && usage
+# Add extra dirs to command, one -o for each extra dir
+for dir in $EXTRA_DIRS; do
+  EXTRA_DIRS_STRING+=" -o -name $dir"
+done
+if [[ "$VERBOSE" ]]; then
+  echo "TYPE: $TYPE"
+  echo "NAME: $NAME"
+  echo "EXTRA_DIRS: $EXTRA_DIRS"
+  echo "EXTRA_DIRS_STRING: $EXTRA_DIRS_STRING"
+fi
+# Execute find command with error checking
+PATHS=$(find . -type d \( -name ".venv" -o -name ".git" -o -name ".collections" $EXTRA_DIRS_STRING \) -prune -o \
+  -type "$TYPE" -name "$NAME")
+if [[ -s "$PATHS" ]]; then
+  echo "Find command failed"
+  exit 1
+fi
+if [[ $GREP ]]; then
+  if [[ $VERBOSE ]]; then
+    echo "PATHS: $PATHS"
+    echo "GREP: $GREP"
+  fi
+  for path in $PATHS; do
+    ugrep -H "$GREP" "$path"
+  done
+else
+  echo "$PATHS"
+fi

@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+
+import argparse
+import subprocess
+import sys
+
+DEBUG = True
+
+
+def main():
+    parser = argparse.ArgumentParser(description="ugrep wrapper with default options")
+    parser.add_argument("search_term", help="The search term to use")
+    parser.add_argument(
+        "--nohidden", action="store_true", help="Don't include hidden files"
+    )
+    parser.add_argument(
+        "-d", "--debug", action="store_true", help="Print debug information"
+    )
+    parser.add_argument(
+        "--exclude-dir", action="append", help="Exclude directories from search"
+    )
+    parser.add_argument(
+        "--include-dir", action="append", help="Include directories in search"
+    )
+    parser.add_argument(
+        "--exclude", action="append", help="Exclude files matching glob pattern"
+    )
+    parser.add_argument(
+        "-g", "--include", action="append", help="Include files matching glob pattern"
+    )
+    parser.add_argument(
+        "-i", "--ignore-case", action="store_true", help="Ignore case in search"
+    )
+    parser.add_argument(
+        "-w", "--word", action="store_true", help="Match whole words only"
+    )
+    parser.add_argument("--line-number", action="store_true", help="Show line numbers")
+    parser.add_argument(
+        "--no-color", action="store_true", help="Do not colorize output"
+    )
+    parser.add_argument(
+        "--always-color", action="store_true", help="Always colorize output"
+    )
+    parser.add_argument(
+        "-c", "--count", action="store_true", help="Show only the count of matches"
+    )
+    parser.add_argument(
+        "-v", "--invert-match", action="store_true", help="Invert the match"
+    )
+    parser.add_argument(
+        "-F", "--fixed-strings-file", help="File containing fixed strings to search for"
+    )
+    parser.add_argument(
+        "-s", "--no-messages", action="store_true", help="Suppress error messages"
+    )
+    parser.add_argument(
+        "--no-filename", action="store_true", help="Suppress file names"
+    )
+    parser.add_argument(
+        "--include_binaries", action="store_true", help="Include binary files in search"
+    )
+    parser.add_argument(
+        "-l", "--file-names-only", action="store_true", help="Show only file names"
+    )
+    parser.add_argument("--version", action="version", version="%(prog)s 1.0")
+
+    # Default values
+    DEBUG = False
+    cmd_args = []
+    search_term = ""
+    hidden = True
+    exclude_dirs = ["*.venv", "*.collections", "*.git"]
+    include_dirs = []
+    exclude = []
+    include = []
+    ignore_case = False
+    word = False
+    line_number = False
+    color = "auto"
+    count = False
+    invert_match = False
+    fixed_strings_file = None
+    no_messages = False
+    no_filename = False
+    include_binaries = False
+    file_names_only = False
+
+    args = parser.parse_args()
+    # Add default arguments
+    if args.nohidden:
+        hidden = False
+    if args.exclude_dir:
+        exclude_dirs = args.exclude_dir
+    if args.include_dir:
+        include_dirs = args.include_dir
+    if args.exclude:
+        exclude = args.exclude
+    if args.include:
+        include = args.include
+    if args.ignore_case:
+        ignore_case = True
+    if args.word:
+        word = True
+    if args.line_number:
+        line_number = True
+    if args.no_color:
+        color = "never"
+    if args.always_color:
+        color = "always"
+    if args.count:
+        count = True
+    if args.invert_match:
+        invert_match = True
+    if args.fixed_strings_file:
+        fixed_strings_file = args.fixed_strings_file
+    if args.no_messages:
+        no_messages = True
+    if args.no_filename:
+        no_filename = True
+    if args.include_binaries:
+        include_binaries = True
+    if args.file_names_only:
+        file_names_only = True
+    if args.debug:
+        DEBUG = True
+
+    # Set the search term
+    search_term = args.search_term
+
+    # Set the command arguments
+    if hidden:
+        cmd_args.append("-H")
+    if exclude_dirs:
+        for d in exclude_dirs:
+            cmd_args.append(f'--exclude-dir="{d}"')
+    if include_dirs:
+        for d in include_dirs:
+            cmd_args.append(f'--include-dir="{d}"')
+    if exclude:
+        for g in exclude:
+            cmd_args.append(f'--exclude="{g}"')
+    if include:
+        for g in include:
+            cmd_args.append(f'--include="{g}"')
+    if ignore_case:
+        cmd_args.append("-i")
+    if word:
+        cmd_args.append("-w")
+    if line_number:
+        cmd_args.append("-n")
+    cmd_args.append("--color=" + color)
+    if count:
+        cmd_args.append("-c")
+    if invert_match:
+        cmd_args.append("-v")
+    if fixed_strings_file:
+        cmd_args.append("-F " + fixed_strings_file)
+    if no_messages:
+        cmd_args.append("-s")
+    if no_filename:
+        cmd_args.append("-h")
+    if not include_binaries:
+        cmd_args.append("-I")
+    if file_names_only:
+        cmd_args.append("-l")
+
+    if DEBUG:
+        print(f"CMD_ARGS: {cmd_args}", file=sys.stderr)
+        print(f"SEARCH_TERM: {search_term}", file=sys.stderr)
+
+    # Build the full command
+    full_cmd = " ".join(["ugrep"] + cmd_args + [search_term])
+
+    if DEBUG:
+        print(f"Running: {full_cmd}", file=sys.stderr)
+
+    # Run the command
+    subprocess.call(full_cmd, shell=True)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set_var=$1
+debug=$2
+
+if [ -n "$debug" -a "$debug" == "debug" ]; then
+    echo "Debug mode enabled"
+    TAGS="debug"
+else
+    TAGS=""
+fi
+
+# ansible-playbook command must exist
+if ! command -v ansible-playbook &> /dev/null; then
+    echo "ansible-playbook command must exist"
+    exit 1
+fi
+
+# set_var must be either "true" or "false"
+if [ "$set_var" = "true" ]; then
+    TAGS="$TAGS,set_true"
+elif [ "$set_var" = "false" ]; then
+    TAGS="$TAGS,set_false"
+else
+    echo "set_var must be either \"true\" or \"false\""
+    exit 1
+fi
+
+ansible-playbook -i localhost, ~/bin/ansible_lint_enable.yml --tags "$TAGS" -e "launch_folder=$PWD"
+exit 0

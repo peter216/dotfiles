@@ -1,0 +1,52 @@
+#!/bin/bash
+# smart_push.sh
+# This script attempts to push changes to the current branch using --force-with-lease.
+# If the push fails due to changes in the remote branch, it fetches the latest changes,
+# rebases the local changes onto the latest remote branch, and tries to push again.
+# Usage: ./smart_push.sh [additional git push flags] [-v for verbose output]
+# Example: ./smart_push.sh -v --dry-run
+
+DEBUG=0
+set -e # Exit on any unhandled error
+additional_flags="$@"
+# Check for -h or --help in flags. If found, display usage and exit
+if [[ " $additional_flags " == *" -h "* ]] || [[ " $additional_flags " == *" --help "* ]]; then
+    echo "Usage: ./smart_push.sh [additional git push flags] [-v for verbose output]"
+    exit 0
+fi
+# Check for -v in flags. If found, enable DEBUG and pass it on to git push
+if [[ " $additional_flags " == *" -v "* ]]; then
+    DEBUG=1
+    set -x # Enable debug mode
+fi
+# Get current branch name
+branch=$(git symbolic-ref --short HEAD)
+remote_branch="origin/$branch"
+echo "Attempting to push with --force-with-lease..."
+if git push --force-with-lease $additional_flags; then
+    echo "✅ Push successful."
+    exit 0
+else
+    echo "⚠️  First push failed — remote branch has changed."
+    echo "Fetching latest from origin..."
+    git fetch origin
+    echo "Rebasing your work onto latest $remote_branch..."
+    if git rebase "$remote_branch"; then
+        echo "✅ Rebase successful. Trying push again..."
+        if git push --force-with-lease $additional_flags; then
+            echo "✅ Push successful after rebase."
+            exit 0
+        else
+            echo "❌ Push failed again after rebase."
+            echo "Please resolve conflicts or check remote branch manually."
+            exit 1
+        fi
+    else
+        echo "❌ Rebase failed. You likely have merge conflicts."
+        echo "Please resolve them with:"
+        echo "  git status"
+        echo "  git rebase --continue"
+        echo "Then re-run this script."
+        exit 1
+    fi
+fi

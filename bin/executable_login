@@ -1,0 +1,173 @@
+#!/usr/bin/env python
+"""
+login.py - SSH login script for TACACS network devices
+"""
+
+import getopt
+import ipaddress
+import os
+import socket
+import subprocess
+import sys
+
+from ansible_vault import Vault
+from pexpect import pxssh
+
+# Get home directory
+user = os.environ["USER"]
+user_home = os.environ["HOME"]
+# Define the vault password variable name in gopass
+VPVAR = ".vault_pass-var"
+
+
+def usage():
+    print("Usage: login.py <device> [-m <mode>] [-t]")
+    print("Options:")
+    print("  -m <mode>  : ro or rw (default: ro)")
+    print("  -s         : Adjust screen length")
+    print("  -t         : Set term length 0")
+    print("  -a         : Use aruba mode")
+    print("  -h         : Print this help message")
+    print("  -u         : Username (optional, default: tacacs user)")
+    print("  -p         : Password (optional, default: tacacs password)")
+    print("  -c         : Commands to execute (optional) - comma separated")
+    sys.exit(2)
+
+
+def get_creds(mode):
+    encrypted_data = """
+$ANSIBLE_VAULT;1.1;AES256
+37616365363163346134396165326266333365356465313566393634313135396539306661646432
+3639376536396563303438613738383330633831353138330a383739323939326365383637386634
+66386361613336313630313137393538653337393463386465396462326233626539376230333333
+3238626265666261360a303064356438663363663461343436373535643836613038316530313133
+30333033323038663862356165626164323334353835323433616139323764626466306566643964
+64363461316561666465313530313162353431363962373238646130313036643365376633626531
+36373930373338343338623239366263366264366232386336353162643065316630363536666664
+62623464393465393837333161633139646430326631313937313962353130386539643235363232
+63303035343138323366383635663332643235396135653066313837363365373230"""
+
+    # with open(f"{user_home}/.vault_pass", "r") as f:
+    #     vault_password = f.read().strip()
+
+    vault_password = subprocess.check_output(["gopass", "cat", VPVAR]).decode("utf-8").strip()
+
+    vault = Vault(vault_password)
+    vaulted_passwords = vault.load(encrypted_data.strip())
+    return vaulted_passwords[mode]["user"], vaulted_passwords[mode]["pass"]
+
+
+def main():
+    mode = None
+    screen_adjust = False
+    term_length_0 = False
+    user = None
+    pw = None
+    commands = None
+    VERBOSITY_LEVEL = 0
+
+    assert len(sys.argv) > 1, usage()
+    device = sys.argv[1]
+
+    if device == "-h":
+        usage()
+
+    if len(sys.argv) > 2:
+        try:
+            options, remainder = getopt.getopt(sys.argv[2:], "m:u:p:c:sthv")
+        except getopt.GetoptError as e:
+            print(f"{e}", file=sys.stderr)
+            usage()
+
+        for opt, arg in options:
+            if opt == "-m":
+                mode = arg
+            elif opt == "-s":
+                screen_adjust = True
+            elif opt == "-t":
+                term_length_0 = True
+            elif opt == "-v":
+                VERBOSITY_LEVEL += 1
+            elif opt == "-u":
+                user = arg
+            elif opt == "-p":
+                pw = arg
+            elif opt == "-c":
+                commands = arg
+            elif opt == "-h":
+                usage()
+
+    try:
+        ipaddress.ip_address(device)
+    except ValueError:
+        try:
+            address = socket.gethostbyname(device)
+            if VERBOSITY_LEVEL > 0:
+                print(f"Resolved {device} to {address}", file=sys.stderr)
+        except socket.gaierror:
+            print(f"Invalid device: {device}", file=sys.stderr)
+            usage()
+
+    if not mode:
+        mode = "ro"
+
+    if VERBOSITY_LEVEL > 2:
+        print(f"sys.argv: {sys.argv}", file=sys.stderr)
+
+    # Get vaulted passwords from encrypted data
+    if not user:
+        username, password = get_creds(mode)
+    else:
+        username, password = user, pw
+
+    if VERBOSITY_LEVEL > 0:
+        print(f"Connecting to {device} as {username} in {mode} mode", file=sys.stderr)
+
+    try:
+        ssh_conn = pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile": "/dev/null"})
+        ssh_conn.force_password = True
+        ssh_conn.login(device, username, password, auto_prompt_reset=False)
+
+    except pxssh.ExceptionPxssh as e:
+        print(f"{e.__class__}, {e}", file=sys.stderr)
+        sys.exit(99)
+
+    if VERBOSITY_LEVEL > 2:
+        print(f"sys.stdout.isatty(): {sys.stdout.isatty()}", file=sys.stderr)
+
+    if screen_adjust:
+        if sys.stdout.isatty():
+            screen_length = os.get_terminal_size().lines
+            ssh_conn.sendline(f"screen-length {screen_length}")
+        else:
+            print("Unable to auto-adjust terminal length.", file=sys.stderr)
+            print("Use command 'screen-length <lines>' after login.", file=sys.stderr)
+    ssh_conn.sendline()
+    if term_length_0:
+        if aruba_mode:
+            ssh_conn.sendline("no pag")
+            ssh_conn.expect(r"#\s*$")
+        else:
+            ssh_conn.sendline("terminal length 0")
+            ssh_conn.expect(r"#\s*$")
+    # Always turn on terminal monitor
+    ssh_conn.sendline("terminal monitor")
+    ssh_conn.expect(r"#\s*$")
+    if commands:
+        for command in commands.split(","):
+            command = command.strip()
+            ssh_conn.sendline(command)
+            ssh_conn.expect(r"#\s*$")
+            ssh_conn.expect(r"#\s*$")
+            output = ssh_conn.before.decode("utf-8")
+            print(output)
+        # print(ssh_conn.before)
+        # ipdb.set_trace()
+        # pprint(ssh_conn.__dict__)
+        ssh_conn.close()
+    else:
+        ssh_conn.interact()
+
+
+if __name__ == "__main__":
+    main()

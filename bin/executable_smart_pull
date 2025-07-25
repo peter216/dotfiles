@@ -1,0 +1,30 @@
+#!/bin/bash
+set -e # Exit on any unhandled error
+# Get the current branch
+branch=$(git symbolic-ref --short HEAD)
+upstream="origin/$branch"
+# Fetch latest changes from remote
+if git fetch origin; then
+    echo "✅ Fetched latest changes from origin."
+else
+    echo "❌ Failed to fetch changes from origin. Exiting."
+    exit 1
+fi
+# Count commits only in local or only in remote
+local_ahead=$(git rev-list --count "$upstream..HEAD")
+remote_ahead=$(git rev-list --count "HEAD..$upstream")
+if [ "$local_ahead" -gt 0 ]; then
+    echo "You have local commits not on origin/$branch — using merge"
+    if git pull --no-rebase; then # or just git pull
+        echo "✅ Merge successful"
+    else
+        echo "❌ Merge failed"
+    fi
+else
+    echo "No local commits — using rebase"
+    if git pull --rebase; then
+        echo "✅ Rebase successful"
+    else
+        echo "❌ Rebase failed"
+    fi
+fi

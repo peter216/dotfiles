@@ -1,0 +1,89 @@
+#!/usr/bin/bash
+
+usage() {
+  echo "Usage: findf [-t type] [-n name] [-d extra-dirs] [-v]"
+  echo "Find all paths of name and optional type below current directory"
+  echo "while exluding directories .venv, .git, and .collections"
+  echo
+  echo "Options:"
+  echo "  -t --type              : 'f' for files or 'd' for directories"
+  echo "  -n --name              : the name of the file or directory to search for"
+  echo "  -d --extra-dirs        : a space separated list of additional directories to exclude"
+  echo "  -v                     : verbose mode"
+  echo
+  echo "  Type defaults to 'f' (files)"
+  echo "  Name is set to last argument if not set with -n"
+  echo
+  echo "Examples:"
+  echo "  findf -n '*.py' -d 'venv collections' -v"
+  echo "  findf -n 'requirements.txt'"
+  echo "  findf '*.yml'"
+  echo "  findf -t d -n 'roles'"
+  echo
+  exit 1
+}
+
+# Initialize variables
+TYPE="f" # Default to files
+NAME=""
+EXTRA_DIRS=""
+EXTRA_DIRS_STRING=""
+VERBOSE=
+ORIG_ARGS="$@"
+
+# Read cli args
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  -h | --help)
+    usage
+    ;;
+  -t | -type)
+    shift
+    [[ $# -eq 0 ]] && echo "Missing type argument" && usage
+    TYPE="$1"
+    shift
+    ;;
+  -n | -name)
+    shift
+    [[ $# -eq 0 ]] && echo "Missing name argument" && usage
+    NAME="$1"
+    shift
+    ;;
+  -d | -extra-dirs)
+    shift
+    [[ $# -eq 0 ]] && echo "Missing name argument" && usage
+    EXTRA_DIRS="$1"
+    shift
+    ;;
+  -v | -verbose)
+    VERBOSE=true
+    set -x
+    shift
+    ;;
+  *)
+    # Set name if not already set
+    [[ -z "$NAME" ]] && NAME="$1"
+    shift
+    ;;
+  esac
+done
+
+# Validate required arguments
+[[ -z "$NAME" ]] && echo "Name is required" && usage
+# Add extra dirs to command, one -o for each extra dir
+for dir in $EXTRA_DIRS; do
+  EXTRA_DIRS_STRING+=" -o -name $dir"
+done
+if [[ -n "$VERBOSE" ]]; then
+  echo "ARGS: $ORIG_ARGS"
+  echo "TYPE: $TYPE"
+  echo "NAME: $NAME"
+  echo "EXTRA_DIRS: $EXTRA_DIRS"
+  echo "EXTRA_DIRS_STRING: $EXTRA_DIRS_STRING"
+fi
+# Execute find command with error checking
+find . -type d \( -name ".venv" -o -name ".git" -o -name ".collections" $EXTRA_DIRS_STRING \) -prune -o \
+  -type "$TYPE" -name "$NAME" -print || {
+  echo "Find command failed"
+  exit 1
+}

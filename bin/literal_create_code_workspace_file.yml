@@ -1,0 +1,49 @@
+---
+- name: create_code_workspace_file # noqa name[casing]
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Create the workspace directory
+      ansible.builtin.file:
+        path: "~/{{ username }}/workspace/{{ project_name_short }}"
+        state: directory
+        mode: "0755"
+        recurse: true
+
+    - name: Create the workspace file
+      ansible.builtin.template:
+        src: template.c-w.j2
+        dest: "~/{{ username }}/workspace/{{ project_name_short }}/{{ project_name_short }}.code-workspace"
+        mode: "0644"
+
+    - name: Verify the git folders exist or create them
+      ansible.builtin.file:
+        path: "~/{{ username }}/git/{{ item }}"
+        state: directory
+        mode: "0755"
+        recurse: true
+      loop:
+        - "{{ project_name }}"
+        - "{{ 'mind.ee/' ~ project_name }}"
+      register: git_folders
+
+    - name: ls the workspace directory # noqa name[casing]
+      ansible.builtin.command: ls -la ~/{{ username }}/workspace/{{ project_name_short }}
+      changed_when: false
+      register: workspace_directory
+
+    - name: ls the git folders # noqa name[casing]
+      ansible.builtin.command: "{{ command }}"
+      changed_when: false
+      register: git_folders
+      vars:
+        command: "{{ 'ls -la ' ~ git_folders.results | map(attribute='path') | join(' ') }}"
+
+    - name: Print the workspace directory
+      ansible.builtin.debug:
+        var: workspace_directory.stdout_lines
+
+    - name: Print the git folders
+      ansible.builtin.debug:
+        var: git_folders.stdout_lines
