@@ -249,3 +249,6 @@ echo $GITHUB_ENT_TOKEN | gh auth login --hostname git.marriott.com --with-token
 function ghuser() {
     gh api --hostname git.marriott.com "users/$1" | jq -r '{login: .login, id: .id, name: .name}'
 }
+
+# Get the latest chezmoi changes
+chezmoi update --verbose
