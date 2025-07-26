@@ -168,6 +168,13 @@ function cmpush(){
     smart_push
     cd $olddir
     echo -e "${CYAN}Back to original path: $PWD${RESET}"
+    echo -e "${MAGENTA}Sourcing .bashrc or .zshrc...${RESET}"
+    if [ -n "$BASH_VERSION" ]; then
+        source ~/.bashrc
+    elif [ -n "$ZSH_VERSION" ]; then
+        source ~/.zshrc
+    fi
+    echo -e "${GREEN}Done!${RESET}"
 }
 
 # Function: git diff with diff-so-fancy
