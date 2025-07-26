@@ -157,6 +157,9 @@ export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/api_github_com_certchain.pem
 function cmpush(){
     MESSAGE=${1:-"chezmoi update"}
     local olddir=$PWD
+    echo -e "${MAGENTA}Applying changes locally...${RESET}"
+    chezmoi apply --verbose
+    echo -e "${MAGENTA}Pushing changes...${RESET}"
     echo -e "${CYAN}Start path: $PWD${RESET}"
     cd $(chezmoi source-path)
     echo -e "${CYAN}Changed to Chezmoi source path: $PWD${RESET}"
@@ -206,7 +209,7 @@ function ycurl() {
 {{- end }}
 {{- if ne .chezmoi.hostname "hdqncnmdj01" }}
 # github copilot cli
-eval "$(gh copilot alias -- bash)"
+eval "$(gh copilot alias --hostname github.com -- bash)"
 function suggest() {
     echo Exit | ghcs --hostname github.com "$@" | tail -n +7 | head -5
 }
