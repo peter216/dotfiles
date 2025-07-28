@@ -211,10 +211,6 @@ function ycurl() {
 }
 
 # machine-specific configuration
-{{- if eq .chezmoi.hostname "hdqncnmdj01" }}
-# This machine doesn't have access to public github
-{{- end }}
-{{- if ne .chezmoi.hostname "hdqncnmdj01" }}
 # github copilot cli
 eval "$(gh copilot alias --hostname github.com -- bash)"
 function suggest() {
@@ -223,7 +219,6 @@ function suggest() {
 function explain() {
     ghce --hostname github.com "$@" | tail -n +7
 }
-{{- end }}
 
 # Load these environment variables from secret cache at launch
 if gopass cat .env-vars &>/dev/null; then
@@ -252,6 +247,34 @@ function gopassget() {
         return 1
     fi
     echo "$secret_output"
+}
+
+# Copy a file from gopass and set an expiration time on it
+function gopasscopy() {
+    local tomorrow=$(date -u -d "tomorrow" +"%Y-%m-%dT%H:%M:%SZ")
+    local secret_path="$1"
+    local expiration_time="$tomorrow"
+    local secret_output
+    secret_output="$(gopass cat "$secret_path")"
+    if [ $? -ne 0 ]; then
+        echo "Error retrieving secret: $secret_path"
+        return 1
+    fi
+    local temp_file="./$(basename "$secret_path")"
+    echo "$secret_output" > "$temp_file"
+    if [ $? -ne 0 ]; then
+        echo "Error writing to temporary file: $temp_file"
+        return 1
+    fi
+    if [ -n "$expiration_time" ]; then
+        setfattr -n user.expire_at -v "$expiration_time" "$temp_file"
+    fi
+    if [ $? -ne 0 ]; then
+        echo "Error setting expiration time on $temp_file"
+        return 1
+    fi
+    echo "Copied secret to $temp_file with expiration time set to $expiration_time"
+    echo "You can check the expiration time with: getfattr -n user.expire_at $temp_file"
 }
 
 # Login to gh on the Enterprise instance
