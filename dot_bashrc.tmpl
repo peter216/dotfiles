@@ -253,28 +253,23 @@ function gopassget() {
 function gopasscopy() {
     local tomorrow=$(date -u -d "tomorrow" +"%Y-%m-%dT%H:%M:%SZ")
     local secret_path="$1"
+    local extension="${secret_path##*.}"
     local expiration_time="$tomorrow"
-    local secret_output
-    secret_output="$(gopass cat "$secret_path")"
+    local secret_output=$(basename "$secret_path" $extension)
+    gopass fscopy "$secret_path" $secret_output
     if [ $? -ne 0 ]; then
-        echo "Error retrieving secret: $secret_path"
-        return 1
-    fi
-    local temp_file="./$(basename "$secret_path")"
-    echo "$secret_output" > "$temp_file"
-    if [ $? -ne 0 ]; then
-        echo "Error writing to temporary file: $temp_file"
+        echo "Error copying secret: $secret_path" to "$secret_output"
         return 1
     fi
     if [ -n "$expiration_time" ]; then
-        setfattr -n user.expire_at -v "$expiration_time" "$temp_file"
+        setfattr -n user.expire_at -v "$expiration_time" "$secret_output"
     fi
     if [ $? -ne 0 ]; then
-        echo "Error setting expiration time on $temp_file"
+        echo "Error setting expiration time on $secret_output"
         return 1
     fi
-    echo "Copied secret to $temp_file with expiration time set to $expiration_time"
-    echo "You can check the expiration time with: getfattr -n user.expire_at $temp_file"
+    echo "Copied secret to $secret_output with expiration time set to $expiration_time"
+    echo "You can check the expiration time with: getfattr -n user.expire_at $secret_output"
 }
 
 # Login to gh on the Enterprise instance
