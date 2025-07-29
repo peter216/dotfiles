@@ -1,4 +1,3 @@
-
 # Set hostname variable
 export HOSTNAME=$(hostname)
 
@@ -253,9 +252,9 @@ function gopassget() {
 function gopasscopy() {
     local tomorrow=$(date -u -d "tomorrow" +"%Y-%m-%dT%H:%M:%SZ")
     local secret_path="$1"
-    local extension="${secret_path##*.}"
-    local expiration_time="$tomorrow"
-    local secret_output=$(basename "$secret_path" $extension)
+    # local extension="${secret_path##*.}"
+    # local secret_output=$(basename "$secret_path" $extension)
+    local secret_output="${2:-$HOME/.secrets/$secret_path.out}"
     gopass fscopy "$secret_path" $secret_output
     if [ $? -ne 0 ]; then
         echo "Error copying secret: $secret_path" to "$secret_output"
