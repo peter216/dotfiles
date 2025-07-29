@@ -222,7 +222,7 @@ function explain() {
 # Load these environment variables from secret cache at launch
 if gopass cat .env-vars &>/dev/null; then
     # Use eval to correctly process the shell-escaped output from jq
-    eval "$(gopass cat .env-vars | jq -r 'to_entries|map("export \(.key)=\(.value|@sh)")|.[]')"
+    eval "$(gopass cat .env-vars | jq -r 'to_entries|map(select(.value|type == "string"))|map("export \(.key)=\(.value|@sh)")|.[]')"
 fi
 
 # Function to load json formatted secrets from gopass
@@ -234,7 +234,7 @@ function gopassload() {
         return 1
     fi
     # Use eval to correctly process the shell-escaped output from jq
-    eval "$(echo "$secrets" | jq -r 'to_entries|map("export \(.key)=\(.value|@sh)")|.[]')"
+    eval "$(echo "$secrets" | jq -r 'to_entries|map(select(.value|type == "string"))|map("export \(.key)=\(.value|@sh)")|.[]')"
 }
 
 # Cat a secret from the cache
