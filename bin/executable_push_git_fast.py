@@ -4,7 +4,7 @@ push_git_fast.py - Push multiple branches to remote
 Description:
     This script pushes multiple branches to remote in a git repository. It allows you to specify commit messages, branches, and options to skip linter checks or pre-commit hooks.
 Usage:
-    push_git_fast.py [-c COMMIT_MESSAGE] [-b BRANCH] [-dp] [-s SKIP_LINTER] [--verify] [positional]
+    push_git_fast.py [-c COMMIT_MESSAGE] [-b BRANCH] [-dp] [-s SKIP_LINTER] [--no_verify] [positional]
     push_git_fast.py -h
 Options:
     -h, --help            show this help message and exit
@@ -15,7 +15,7 @@ Options:
     -dp, --dontpush      Don't push to remote
     -s SKIP_LINTER, --skip_linter SKIP_LINTER
                         Skip linter
-    --verify             Skip pre-commit hooks
+    --no_verify             Skip pre-commit hooks
     positional           Positional argument for commit message if only one argument is provided
 """
 
@@ -110,12 +110,13 @@ def main():
     parser.add_argument(
         "-s",
         "--skip_linter",
+        action="store_true",
         help="Skip linter",
         required=False,
-        default="",
+        default=False,
     )
     parser.add_argument(
-        "--verify",
+        "--no_verify",
         action="store_true",
         help="Skip pre-commit hooks",
         required=False,
@@ -176,17 +177,16 @@ def main():
                     raise
 
             commit_parts = ["git", "commit", "-m", f"'{commit_message}'"]
-            if not args.verify:
-                commit_parts.append("--no-verify")
+            if args.no_verify:
+                commit_parts.append("--no_verify")
             merge_parts = ["git", "merge", f"{branches[0]}"]
-            if not args.verify:
-                merge_parts.append("--no-verify")
+            if args.no_verify:
+                merge_parts.append("--no_verify")
 
             try:
                 if numbranch == 0:
                     print_in_and_out(["git", "add", "-A"])
-                    if args.skip_linter:
-                        os.environ["SKIP"] = args.skip_linter
+                    os.environ["SKIP"] = args.skip_linter
                     print_in_and_out(commit_parts)
                 else:
                     print_in_and_out(merge_parts)
