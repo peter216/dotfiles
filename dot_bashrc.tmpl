@@ -210,6 +210,8 @@ function ycurl() {
 }
 
 # machine-specific configuration
+# machine-specific config (no github.com on this host)
+{{- if ne .chezmoi.hostname "hdqncnmdj01" }}
 # github copilot cli
 eval "$(gh copilot alias --hostname github.com -- bash)"
 function suggest() {
@@ -218,6 +220,7 @@ function suggest() {
 function explain() {
     ghce --hostname github.com "$@" | tail -n +7
 }
+{{- end }}
 
 # Load these environment variables from secret cache at launch
 if gopass cat .env-vars &>/dev/null; then
