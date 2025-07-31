@@ -34,12 +34,18 @@ coloring = highlightRecent
 date = human
 [http]
 	sslverify = false
+# machine-specific config (no github.com on this host)
+{{- if ne .chezmoi.hostname "hdqncnmdj01" }}
 [credential "https://github.com"]
 helper = !/usr/bin/gh auth git-credential
 [credential "https://gist.github.com"]
 helper = !/usr/bin/gh auth git-credential
+{{- end }}
 [push]
 autoSetupRemote = true
 [credential]
 	helper = cache --timeout=86400
+# machine-specific config (no github.com on this host)
+{{- if ne .chezmoi.hostname "hdqncnmdj01" }}
 	helper = oauth
+{{- end }}
