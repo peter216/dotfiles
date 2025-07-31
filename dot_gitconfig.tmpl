@@ -45,7 +45,3 @@ helper = !/usr/bin/gh auth git-credential
 autoSetupRemote = true
 [credential]
 	helper = cache --timeout=86400
-# machine-specific config (no github.com on this host)
-{{- if ne .chezmoi.hostname "hdqncnmdj01" }}
-	helper = oauth
-{{- end }}
