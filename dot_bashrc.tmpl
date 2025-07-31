@@ -287,5 +287,63 @@ function ghuser() {
     gh api --hostname git.marriott.com "users/$1" | jq -r '{login: .login, id: .id, name: .name}'
 }
 
-# Get the latest chezmoi changes
-chezmoi update --verbose
+function cmupdate() {
+    local olddir=$PWD
+    local chezdir
+    chezdir="$(chezmoi source-path)"
+    echo -e "${MAGENTA}Downloading new changes from chezmoi...${RESET}"
+
+    if ! cd "$chezdir"; then
+        echo -e "${RED}Failed to change to chezmoi source path: $chezdir${RESET}"
+        return 1
+    fi
+    echo -e "${CYAN}Changed to Chezmoi source path: $PWD${RESET}"
+
+    if ! smart_pull; then
+        echo -e "${RED}Failed to pull latest changes.${RESET}"
+        cd "$olddir"
+        return 1
+    fi
+
+    local cmdiff
+    cmdiff="$(git diff origin/main)"
+    if [ -z "$cmdiff" ]; then
+        echo -e "${MAGENTA}No changes to update.${RESET}"
+        cd "$olddir"
+        echo -e "${CYAN}Back to original path: $PWD${RESET}"
+        return 0
+    fi
+
+    echo -e "${YELLOW}Changes detected:${RESET}"
+    echo -e "${CYAN}$cmdiff${RESET}"
+    echo -e "${MAGENTA}Applying changes locally...${RESET}"
+
+    if ! chezmoi apply --verbose; then
+        echo -e "${RED}Error applying chezmoi changes.${RESET}"
+        cd "$olddir"
+        echo -e "${CYAN}Back to original path: $PWD${RESET}"
+        return 1
+    fi
+
+    echo -e "${GREEN}Changes applied successfully.${RESET}"
+    cd "$olddir"
+    echo -e "${CYAN}Back to original path: $PWD${RESET}"
+
+    if [[ $cmdiff == *".bashrc"* ]] || [[ $cmdiff == *".zshrc"* ]]; then
+        echo -e "${YELLOW}Detected changes in .bashrc or .zshrc, sourcing them...${RESET}"
+        if [ -n "$BASH_VERSION" ]; then
+            echo -e "${CYAN}Sourcing .bashrc...${RESET}"
+            source ~/.bashrc
+        elif [ -n "$ZSH_VERSION" ]; then
+            echo -e "${CYAN}Sourcing .zshrc...${RESET}"
+            source ~/.zshrc
+        fi
+    else
+        echo -e "${MAGENTA}No changes in .bashrc or .zshrc.${RESET}"
+    fi
+
+    echo -e "${GREEN}chezmoi update done!${RESET}"
+    return 0
+}
+
+cmupdate
