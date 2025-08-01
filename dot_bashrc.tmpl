@@ -273,16 +273,18 @@ function gopasscopy() {
 }
 
 # Login to gh on the Enterprise instance
-auth_status=$(gh auth status --hostname git.marriott.com 2>&1)
-if [[ $auth_status != *"✓ Logged in"* ]]; then
-    echo $GITHUB_ENT_TOKEN | gh auth login --hostname git.marriott.com --with-token
-    if [ $? -ne 0 ]; then
-        echo "Error logging in to GitHub Enterprise"
-        return 1
-    fi
-else
-    echo "Already logged in to GitHub Enterprise"
-fi
+# I don't think this is necessary
+#
+# auth_status=$(gh auth status --hostname git.marriott.com 2>&1)
+# if [[ $auth_status != *"✓ Logged in"* ]]; then
+#     echo $GITHUB_ENT_TOKEN | gh auth login --hostname git.marriott.com --with-token
+#     if [ $? -ne 0 ]; then
+#         echo "Error logging in to GitHub Enterprise"
+#         return 1
+#     fi
+# else
+#     echo "Already logged in to GitHub Enterprise"
+# fi
 
 function ghuser() {
     gh api --hostname git.marriott.com "users/$1" | jq -r '{login: .login, id: .id, name: .name}'
