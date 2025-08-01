@@ -186,7 +186,7 @@ def main():
             try:
                 if numbranch == 0:
                     print_in_and_out(["git", "add", "-A"])
-                    os.environ["SKIP"] = args.skip_linter
+                    os.environ["SKIP"] = str(args.skip_linter)
                     print_in_and_out(commit_parts)
                 else:
                     print_in_and_out(merge_parts)
