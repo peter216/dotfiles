@@ -211,7 +211,6 @@ function ycurl() {
 
 # machine-specific configuration
 # machine-specific config (no github.com on this host)
-{{- if ne .chezmoi.hostname "hdqncnmdj01" }}
 # github copilot cli
 eval "$(gh copilot alias --hostname github.com -- bash)"
 function suggest() {
@@ -220,7 +219,6 @@ function suggest() {
 function explain() {
     ghce --hostname github.com "$@" | tail -n +7
 }
-{{- end }}
 
 # Load these environment variables from secret cache at launch
 if gopass cat .env-vars &>/dev/null; then
@@ -288,6 +286,32 @@ fi
 
 function ghuser() {
     gh api --hostname git.marriott.com "users/$1" | jq -r '{login: .login, id: .id, name: .name}'
+}
+
+function cmreconcile() {
+    local templates="$(chezmoi managed --include=templates)"
+    local filediffs=`chezmoi status -x dirs | awk '{print $2}'`
+    if [ -z "$filediffs" ]; then
+        echo -e "${YELLOW}No files to reconcile.${RESET}"
+        return 0
+    fi
+    echo -e "${YELLOW}Files to reconcile:${RESET}"
+    local olddir=$PWD
+    cd $HOME
+    echo -e "${CYAN}cd to home directory: $PWD${RESET}"
+    for file in $filediffs; do
+        if echo "$templates" | grep -qx "$file"; then
+            echo -e "${MAGENTA}Reconciling template file: $file${RESET}"
+            chezmoi add --template "$file"
+            continue
+        fi
+        echo -e "${CYAN}$file${RESET}"
+        chezmoi add "$file"
+    done
+    echo -e "${GREEN}Reconciliation complete!${RESET}"
+    cd $olddir
+    echo -e "${CYAN}Back to original path: $PWD${RESET}"
+    return 0
 }
 
 function cmupdate() {

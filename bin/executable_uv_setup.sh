@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
 # -----------------------------------------------------------------------------
 # uv_setup.sh
@@ -33,6 +33,8 @@
 #   - The script respects the DEBUG environment variable to control debug output.
 #   - The UV_PYTHON environment variable can be set to specify the Python version for the virtual environment.
 # -----------------------------------------------------------------------------
+#
+# TODO: Not working with authors field in pyproject.toml
 
 set -e # Exit on error
 

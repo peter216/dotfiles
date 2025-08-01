@@ -1,5 +1,6 @@
 # Function: Walk up to find and activate nearest .venv, set PROJECT_NAME, and load .env
 function auto_venv() {
+    [[ $AUTOVENVOFF -eq 1 ]] && return
     local dir=$PWD
     # if Windows, use Scripts instead of bin
     if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
