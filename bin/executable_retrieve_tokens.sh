@@ -54,9 +54,19 @@ if [[ $VALUES_ONLY == 1 ]]; then
   KEYS=$(printf '.%s,' "${KEYS_ARRAY[@]}" | sed 's/,$//')
   [[ $DEBUG -eq 1 ]] && echo "DEBUG: jq keys (dot notation): ${KEYS}"
 else
-  # Example: '{MPDEVTOKEN, MPPRODTOKEN}'
-  KEYS=$(printf '{%s}' "$(echo "${KEYS_ARRAY[@]}" | sed 's/ /,/')")
-  [[ $DEBUG -eq 1 ]] && echo "DEBUG: jq keys (brace notation): ${KEYS}"
+  # Example: '[]'
+  [[ $DEBUG -eq 1 ]] && echo "Number of keys: ${#KEYS_ARRAY[@]}"
+  # Output first key
+  [[ $DEBUG -eq 1 ]] && echo "DEBUG: First key: ${KEYS_ARRAY[0]}"
+  if [[ ${#KEYS_ARRAY[@]} -eq 0 || -z ${KEYS_ARRAY[0]} || ${KEYS_ARRAY[0]} == "[]" ]]; then
+    KEYS='.'
+    [[ $DEBUG -eq 1 ]] && echo "DEBUG: No keys provided, using default: ${KEYS}"
+  else
+    # Join the keys with commas for jq brace notation
+    # Example: '{MPDEVTOKEN, MPPRODTOKEN}'
+    KEYS=$(printf '{%s}' "$(echo "${KEYS_ARRAY[@]}" | sed 's/ /,/')")
+    [[ $DEBUG -eq 1 ]] && echo "DEBUG: jq keys (brace notation): ${KEYS}"
+  fi
 fi
 if [[ $RAW_OUTPUT -eq 1 ]]; then
   FLAGS="$FLAGS --raw-output"
