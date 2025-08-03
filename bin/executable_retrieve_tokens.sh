@@ -6,8 +6,26 @@ DEBUG=0
 RAW_OUTPUT=0
 FLAGS=""
 
+usage() {
+  BASENAME=$(basename "$0")
+  echo
+  echo "Usage: $BASENAME [-v] [-d] [-r] -n <variable_name> -k <keys>"
+  echo "  -n <variable_name>: Name of the gopass variable to retrieve"
+  echo "  -k <keys>: Comma-separated list of keys to retrieve from the variable"
+  echo "  -v: Output only values, not keys"
+  echo "  -r: Output raw values (no quotes)"
+  echo "  -d: Enable debug mode"
+  echo "  -h: Show this help message"
+  echo
+  echo "Examples:"
+  echo "  $BASENAME -n .env-vars -k POSTMAN_API_TOKEN"
+  echo "  $BASENAME -d -v -r -n .env-vars -k MPDEVTOKEN,MPPRODTOKEN"
+  echo
+  exit 1
+}
+
 # Get cli arguments
-while getopts "vdrn:k:" opt; do
+while getopts "vdrhn:k:" opt; do
   case $opt in
     n) VARNAME="$OPTARG"
     ;;
@@ -18,6 +36,8 @@ while getopts "vdrn:k:" opt; do
     d) DEBUG=1
     ;;
     r) RAW_OUTPUT=1
+    ;;
+    h) usage
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
