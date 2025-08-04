@@ -61,6 +61,13 @@ if [ -n "$force_color_prompt" ]; then
     fi
 fi
 
+# Copy function
+copy() {
+  local input
+  input=$(cat)
+  printf "\e]52;c;%s\a" "$(printf %s "$input" | base64 | tr -d '\n')"
+}
+
 # Function to print the basename of the directory containing the virtual environment
 function bdvar() {
     if [ -n "$VIRTUAL_ENV" ]; then
