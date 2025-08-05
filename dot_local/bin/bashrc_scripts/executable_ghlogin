@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Function: GitHub CLI login
+function ghlogin() {
+    if gh auth status -h git.marriott.com | grep "✓" &>/dev/null; then
+        echo -e "${GREEN}Already logged in to Enterprise GitHub CLI${RESET}"
+    else
+        echo -e "${YELLOW}Not logged in to Enterprise GitHub CLI, logging in...${RESET}"
+        if echo $GH_ENT_TOKEN | gh auth login --hostname git.marriott.com --with-token; then
+            echo -e "${GREEN}Successfully logged in to Enterprise GitHub CLI${RESET}"
+        else
+            echo -e "${RED}Failed to log in to Enterprise GitHub CLI${RESET}"
+        fi
+    fi
+    if gh auth status -h github.com | grep "✓" &>/dev/null; then
+        echo -e "${GREEN}Already logged in to GitHub CLI${RESET}"
+    else
+        echo -e "${YELLOW}Not logged in to GitHub CLI, logging in...${RESET}"
+        if echo $GH_TOKEN_ | gh auth login --hostname github.com --with-token; then
+            echo -e "${GREEN}Successfully logged in to GitHub CLI${RESET}"
+        else
+            echo -e "${RED}Failed to log in to GitHub CLI${RESET}"
+        fi
+    fi
+}
