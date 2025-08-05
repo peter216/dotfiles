@@ -42,18 +42,14 @@ ansi_reset = "\033[0m"
 
 os.makedirs(LOGDIR, exist_ok=True)
 logger = logging.getLogger(__name__)
-detailed_formatter = logging.Formatter(
-    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+detailed_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 file_handler = logging.FileHandler(f"{LOGDIR}/push_git_fast.log")
 file_handler.setFormatter(detailed_formatter)
 logger.addHandler(file_handler)
 logger.setLevel(LOGLEVEL)
 
 
-def run_command(
-    command: list[str], capture_output: bool = False, check: bool = True
-) -> str | None:
+def run_command(command: list[str], capture_output: bool = False, check: bool = True) -> str | None:
     """
     Helper function to run shell and python commands.
     """
@@ -67,9 +63,7 @@ def run_command(
             command = [sys.executable, win_path] + command[1:]
         else:
             command = [bash_path, win_path] + command[1:]
-    result = subprocess.run(
-        command, capture_output=capture_output, text=True, check=check
-    )
+    result = subprocess.run(command, capture_output=capture_output, text=True, check=check)
     return result.stdout.strip() if capture_output else None
 
 
@@ -149,11 +143,7 @@ def main():
     if args.branch:
         branches = [b[0] for b in args.branch]
     else:
-        branches = [
-            subprocess.check_output(["git", "branch", "--show-current"])
-            .decode("utf-8")
-            .strip()
-        ]
+        branches = [subprocess.check_output(["git", "branch", "--show-current"]).decode("utf-8").strip()]
 
     verbose = args.verbose
 
@@ -161,16 +151,12 @@ def main():
     smart_push_path = shutil.which("smart_push")
     if smart_push_path is None:
         # Try the Windows way
-        mybindir = next(
-            x for x in os.environ["PATH"].split(";") if x.endswith(r"prube194\bin")
-        )
+        mybindir = next(x for x in os.environ["PATH"].split(";") if x.endswith(r"prube194\bin"))
         smart_push_path = str(Path(mybindir) / "smart_push")
 
     if not smart_push_path:
         push_command = ["git", "push"]
-        logger.debug(
-            f"{ansi_magenta}smart_push not found in PATH, using git push instead{ansi_reset}"
-        )
+        logger.debug(f"{ansi_magenta}smart_push not found in PATH, using git push instead{ansi_reset}")
     else:
         push_command = [smart_push_path]
         logger.debug(f"{ansi_magenta}smart_push found at {smart_push_path}{ansi_reset}")
@@ -184,9 +170,7 @@ def main():
                 print_in_and_out(["git", "pull"])
             except Exception:
                 # Maybe the upstream branch doesn't exist yet
-                upstream_exists = print_in_and_out(
-                    f"git ls-remote --heads origin refs/heads/foo/{branch}".split()
-                )
+                upstream_exists = print_in_and_out(f"git ls-remote --heads origin refs/heads/foo/{branch}".split())
                 if not upstream_exists:
                     new_branches.append(branch)
                 else:
